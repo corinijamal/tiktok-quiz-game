@@ -37,6 +37,18 @@ let state = {
 let questionBank = {
     "عام": [
         { text: "من هو مصمم هذه الفعالية؟", type: "direct", correctAnswer: "جمال كوريني" }
+    ],
+    "إسلاميات": [
+        { text: "ما هي السورة التي تُسمى بـ \"قلب القرآن\"؟", type: "direct", correctAnswer: "يس" },
+        { text: "من هو أول الخلفاء الراشدين؟", type: "direct", correctAnswer: "أبو بكر الصديق" },
+        { text: "كم عدد سور القرآن الكريم؟", type: "direct", correctAnswer: "114" },
+        { text: "ما هي الغزوة التي سُميت بـ \"يوم الفرقان\"؟", type: "direct", correctAnswer: "غزوة بدر" },
+        { text: "من هو النبي الذي ابتلعه الحوت؟", type: "direct", correctAnswer: "يونس" },
+        { text: "في أي شهر نزل القرآن الكريم؟", type: "direct", correctAnswer: "رمضان" },
+        { text: "ما هي أطول سورة في القرآن الكريم؟", type: "direct", correctAnswer: "البقرة" },
+        { text: "من هي المرأة التي لُقبت بـ \"ذات النطاقين\"؟", type: "direct", correctAnswer: "أسماء بنت أبي بكر" },
+        { text: "ما هو أول مسجد بُني في الإسلام؟", type: "direct", correctAnswer: "مسجد قباء" },
+        { text: "من هو الصحابي الجليل الذي لُقب بـ \"سيف الله المسلول\"؟", type: "direct", correctAnswer: "خالد بن الوليد" }
     ]
 };
 
@@ -49,7 +61,63 @@ function normalizeAnswer(str) {
         .replace(/ى/g, 'ي')
         .replace(/ة/g, 'ه')
         .replace(/[\u064B-\u065F]/g, '') // إزالة التشكيل
-        .replace(/\s+/g, ' ');
+        .replace(/[.,،؟!"']/g, '')       // إزالة علامات الترقيم
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+// عبارات وكلمات لاحقة/زائدة شائعة تُحذف من الإجابة الصحيحة المرجعية
+// حتى لا يُشترط على المشاهد كتابتها ليُحتسب جوابه صحيحاً
+const TRAILING_PHRASES = [
+    'رضي الله عنه وعنها', 'رضي الله عنهما', 'رضي الله عنهم',
+    'رضي الله عنه', 'رضي الله عنها',
+    'عليه الصلاة والسلام', 'عليه السلام', 'صلى الله عليه وسلم'
+];
+const TRAILING_WORDS = ['سورة', 'سوره', 'غزوة', 'غزوه'];
+
+function extractCoreAnswer(rawAnswer) {
+    let core = normalizeAnswer(rawAnswer);
+
+    // إزالة عبارات الترضي/الترحّم أينما وردت
+    for (const phrase of TRAILING_PHRASES) {
+        core = core.replace(normalizeAnswer(phrase), '').trim();
+    }
+
+    // إزالة كلمة وصفية زائدة إذا جاءت في أول أو آخر الإجابة (مثل "114 سورة" أو "سورة البقرة")
+    const words = core.split(' ').filter(Boolean);
+    const filtered = words.filter(w => !TRAILING_WORDS.includes(w));
+    core = filtered.length > 0 ? filtered.join(' ') : core;
+
+    return core.trim();
+}
+
+// تحقق إن كانت إجابة المشاهد تطابق "جوهر" الإجابة الصحيحة
+// تقبل: التطابق التام، أو احتواء المشاهد لكل كلمات الجوهر (بأي ترتيب متتالٍ)،
+// أو أن يكون الجوهر يبدأ بنفس كلمات إجابة المشاهد (مثال: "ابو بكر" ضمن "ابو بكر الصديق")
+function isAnswerCorrect(userComment, correctRawAnswer) {
+    const userAnswer = normalizeAnswer(userComment);
+    if (!userAnswer) return false;
+
+    const core = extractCoreAnswer(correctRawAnswer);
+    const fullCorrect = normalizeAnswer(correctRawAnswer);
+
+    if (userAnswer === fullCorrect || userAnswer === core) return true;
+
+    // المشاهد كتب الجوهر كاملاً ضمن جملة أطول (مثال: "الجواب ابو بكر الصديق")
+    if (core.length >= 2 && userAnswer.includes(core)) return true;
+
+    // المشاهد كتب جزءاً كافياً من الجوهر (مثال: "ابو بكر" بدل "ابو بكر الصديق")
+    // يُشترط أن يطابق بداية الجوهر بكلمات كاملة متتالية، وألا يكون قصيراً جداً (حرف أو حرفين)
+    const coreWords = core.split(' ').filter(Boolean);
+    const userWords = userAnswer.split(' ').filter(Boolean);
+    if (coreWords.length > 1 && userWords.length >= 1) {
+        const prefix = coreWords.slice(0, userWords.length).join(' ');
+        if (userWords.length < coreWords.length && userAnswer === prefix && prefix.length >= 3) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 function broadcastState() {
@@ -271,10 +339,7 @@ tiktokConnection.on('chat', (data) => {
         const alreadyAnswered = state.correctAnswers.some(a => a.name === nickname);
         if (alreadyAnswered) return;
 
-        const userAnswer = normalizeAnswer(comment);
-        const correct = normalizeAnswer(state.currentQuestion.correctAnswer);
-
-        if (userAnswer === correct) {
+        if (isAnswerCorrect(comment, state.currentQuestion.correctAnswer)) {
             state.correctAnswers.push({ name: nickname, team: team || null, time: Date.now() });
             addPoints(nickname, team, 1);
             io.emit('newCorrectAnswer', { name: nickname, team: team || null });
