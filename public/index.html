@@ -53,133 +53,103 @@
         .layout { grid-template-columns: 1fr; }
     }
 
-    .tabs {
-        display: flex;
-        gap: 8px;
-        margin-bottom: 16px;
-        flex-wrap: wrap;
-    }
+    .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
     .tab-btn {
-        background: var(--surface);
-        color: var(--text-dim);
-        border: 1px solid var(--border);
-        padding: 10px 18px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 14px;
-        font-weight: bold;
-        transition: 0.2s;
+        background: var(--surface); color: var(--text-dim); border: 1px solid var(--border);
+        padding: 10px 18px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.2s;
     }
-    .tab-btn.active {
-        background: var(--olive);
-        color: #1a1c12;
-        border-color: var(--olive);
-    }
+    .tab-btn.active { background: var(--olive); color: #1a1c12; border-color: var(--olive); }
 
-    .panel {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 20px;
-        display: none;
-    }
+    .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: none; }
     .panel.active { display: block; }
 
     h3 { margin-top: 0; color: var(--gold); font-size: 17px; }
+    h4 { color: var(--olive); font-size: 15px; margin: 18px 0 8px; }
     label { display: block; font-size: 13px; color: var(--text-dim); margin: 12px 0 5px; }
 
     input[type=text], select, textarea {
-        width: 100%;
-        padding: 10px;
-        border-radius: 8px;
-        border: 1px solid var(--border);
-        background: var(--surface-2);
-        color: var(--text);
-        font-size: 14px;
-        font-family: inherit;
+        width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border);
+        background: var(--surface-2); color: var(--text); font-size: 14px; font-family: inherit;
     }
     textarea { resize: vertical; min-height: 60px; }
 
-    .btn {
-        padding: 10px 18px;
-        border-radius: 8px;
-        border: none;
-        font-weight: bold;
-        cursor: pointer;
-        font-size: 14px;
-        transition: 0.2s;
-    }
+    .btn { padding: 10px 18px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; font-size: 14px; transition: 0.2s; }
     .btn-primary { background: var(--olive); color: #1a1c12; }
     .btn-primary:hover { background: var(--olive-dim); }
     .btn-danger { background: var(--red); color: white; }
     .btn-gold { background: var(--gold); color: #1a1c12; }
     .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
     .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
 
     .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-    .duration-options { display: flex; gap: 8px; margin-top: 5px; }
+    .duration-options, .count-options { display: flex; gap: 8px; margin-top: 5px; flex-wrap: wrap; }
     .duration-chip {
         padding: 8px 14px; border-radius: 20px; border: 1px solid var(--border);
         background: var(--surface-2); cursor: pointer; font-size: 13px; color: var(--text-dim);
     }
     .duration-chip.selected { background: var(--gold); color: #1a1c12; border-color: var(--gold); font-weight: bold; }
 
-    .choice-row { display: flex; gap: 8px; margin-bottom: 8px; }
-    .choice-row input { flex: 1; }
+    .choice-input-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+    .choice-input-row input[type=text] { flex: 1; }
+    .choice-input-row input[type=radio] { width: 20px; height: 20px; accent-color: var(--gold); }
 
-    .status-line {
-        margin-top: 16px; padding: 12px; border-radius: 8px;
-        background: var(--surface-2); font-size: 14px; border: 1px solid var(--border);
-    }
+    .status-line { margin-top: 16px; padding: 12px; border-radius: 8px; background: var(--surface-2); font-size: 14px; border: 1px solid var(--border); }
     .status-line.live { border-color: var(--green); color: var(--green); }
 
-    /* لوحة المتصدرين الجانبية */
-    .sidebar {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 16px;
-        height: fit-content;
-        position: sticky;
-        top: 16px;
-    }
+    .sidebar { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; height: fit-content; position: sticky; top: 16px; }
     .sidebar h3 { display: flex; justify-content: space-between; align-items: center; }
-    .leaderboard-item {
-        display: flex; justify-content: space-between; padding: 8px 10px;
-        border-bottom: 1px solid var(--border); font-size: 14px;
-    }
+    .leaderboard-item { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 14px; }
     .leaderboard-item .rank { color: var(--gold); font-weight: bold; margin-left: 6px; }
     .leaderboard-item .pts { color: var(--olive); font-weight: bold; }
-    .team-score-box {
-        display: flex; justify-content: space-around; margin-bottom: 10px;
-    }
-    .team-score-box .team {
-        text-align: center; background: var(--surface-2); border-radius: 8px; padding: 12px; flex: 1; margin: 0 5px;
-    }
+    .team-score-box { display: flex; justify-content: space-around; margin-bottom: 10px; }
+    .team-score-box .team { text-align: center; background: var(--surface-2); border-radius: 8px; padding: 12px; flex: 1; margin: 0 5px; }
     .team-score-box .team-name { font-size: 13px; color: var(--text-dim); }
     .team-score-box .team-points { font-size: 26px; font-weight: bold; color: var(--gold); }
 
-    .bank-section { margin-bottom: 14px; }
-    .bank-section-title { font-weight: bold; color: var(--olive); margin-bottom: 6px; cursor: pointer; }
-    .bank-question-item {
+    .section-card {
         display: flex; justify-content: space-between; align-items: center;
-        padding: 8px; border-bottom: 1px solid var(--border); font-size: 13px;
+        background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px;
+        padding: 14px; margin-bottom: 10px; cursor: pointer; transition: 0.2s;
     }
-    .bank-question-item button { font-size: 12px; padding: 5px 10px; }
+    .section-card:hover { border-color: var(--olive); }
+    .section-card .name { font-weight: bold; font-size: 15px; }
+    .section-card .meta { font-size: 12px; color: var(--text-dim); margin-top: 3px; }
 
     .participants-list { max-height: 150px; overflow-y: auto; margin-top: 10px; font-size: 13px; }
     .participants-list span { display: inline-block; background: var(--surface-2); padding: 4px 10px; border-radius: 12px; margin: 3px; }
 
-    .correct-list { max-height: 200px; overflow-y: auto; margin-top: 10px; }
-    .correct-list .item {
-        display: flex; justify-content: space-between; padding: 6px 10px;
-        background: var(--surface-2); border-radius: 6px; margin-bottom: 5px; font-size: 13px;
-    }
-    .correct-list .item .num { color: var(--gold); font-weight: bold; }
+    .big-back-btn { margin-bottom: 16px; }
 
-    footer.controls-fixed {
-        display: flex; gap: 10px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);
+    /* شاشة عرض المسابقة الحية */
+    .live-competition { text-align: center; padding: 30px 15px; }
+    .live-competition .badge {
+        display: inline-block; background: var(--gold); color: #1a1c12; font-weight: bold;
+        padding: 6px 18px; border-radius: 20px; font-size: 14px; margin-bottom: 20px;
     }
+    .live-competition .meta-line { color: var(--text-dim); font-size: 14px; margin-bottom: 4px; }
+    .live-competition .question-text { font-size: 24px; font-weight: bold; margin: 20px 0; line-height: 1.5; }
+    .live-competition .timer { font-size: 40px; font-weight: bold; color: var(--gold); margin: 10px 0; }
+    .choices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 500px; margin: 20px auto; }
+    @media (max-width: 500px) { .choices-grid { grid-template-columns: 1fr; } }
+    .choice-box {
+        background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px;
+        padding: 14px; font-size: 15px;
+    }
+    .choice-box .choice-num { color: var(--gold); font-weight: bold; margin-left: 6px; }
+
+    .final-result { text-align: center; padding: 20px; }
+    .final-result h2 { color: var(--gold); font-size: 26px; }
+    .correct-counts-list { max-height: 300px; overflow-y: auto; margin-top: 16px; text-align: right; }
+    .correct-counts-list .item {
+        display: flex; justify-content: space-between; padding: 8px 12px;
+        background: var(--surface-2); border-radius: 8px; margin-bottom: 6px; font-size: 14px;
+    }
+    .correct-counts-list .item .count { color: var(--olive); font-weight: bold; }
+
+    footer.controls-fixed { display: flex; gap: 10px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+
+    .empty-hint { color: var(--text-dim); font-size: 13px; text-align: center; padding: 20px; }
 </style>
 </head>
 <body>
@@ -195,110 +165,194 @@
 <div class="layout">
     <div class="main-col">
         <div class="tabs">
-            <button class="tab-btn active" data-tab="settings">⚙️ الإعدادات والمجموعات</button>
+            <button class="tab-btn active" data-tab="settings">⚙ الإعدادات والمجموعات</button>
             <button class="tab-btn" data-tab="qna">❓ أسئلة وأجوبة</button>
-            <button class="tab-btn" data-tab="race">🏁 سباق كتابة</button>
             <button class="tab-btn" data-tab="draw">🎲 سحب عشوائي</button>
         </div>
 
         <!-- ===================== تبويب الإعدادات والمجموعات ===================== -->
         <div class="panel active" id="panel-settings">
-            <h3>نظام المشاركة</h3>
-            <div class="row">
-                <button class="btn btn-outline" id="modeIndividualBtn" onclick="setTeamMode(false)">فردي</button>
-                <button class="btn btn-outline" id="modeTeamBtn" onclick="setTeamMode(true)">مجموعات (م1 / م2)</button>
-            </div>
 
-            <div id="teamRegistrationBox" style="display:none; margin-top:16px;">
-                <h3>تسجيل المجموعات</h3>
-                <p style="color:var(--text-dim); font-size:13px;">يكتب المشاركون "م1" أو "م2" في تعليقات البث للانضمام. م1 = فريق الشباب، م2 = فريق البنات.</p>
+            <!-- شاشة رئيسية: زران فقط -->
+            <div id="settingsHome">
+                <h3>إدارة الأقسام الخاصة</h3>
                 <div class="row">
-                    <button class="btn btn-primary" onclick="toggleRegistration(true)">🔓 فتح باب التسجيل</button>
-                    <button class="btn btn-danger" onclick="toggleRegistration(false)">🔒 إقفال التسجيل</button>
+                    <button class="btn btn-primary" onclick="showAddSectionScreen()">➕ إضافة قسم</button>
+                    <button class="btn btn-outline" onclick="showEditSectionsScreen()">✏ تعديل قسم</button>
                 </div>
-                <div class="status-line" id="regStatus">التسجيل مغلق</div>
-                <div class="row" style="margin-top:10px; align-items:flex-start;">
-                    <div style="flex:1;">
-                        <strong style="color:var(--olive);">م1 (الشباب) - <span id="team1Count">0</span></strong>
-                        <div class="participants-list" id="team1List"></div>
+
+                <h3 style="margin-top:28px;">نظام المشاركة</h3>
+                <div class="row">
+                    <button class="btn btn-outline" id="modeIndividualBtn" onclick="setTeamMode(false)">فردي</button>
+                    <button class="btn btn-outline" id="modeTeamBtn" onclick="setTeamMode(true)">مجموعات (م1 / م2)</button>
+                </div>
+
+                <div id="teamRegistrationBox" style="display:none; margin-top:16px;">
+                    <h4>تسجيل المجموعات</h4>
+                    <p style="color:var(--text-dim); font-size:13px;">يكتب المشاركون "م1" أو "م2" في تعليقات البث للانضمام. م1 = فريق الشباب، م2 = فريق البنات.</p>
+                    <div class="row">
+                        <button class="btn btn-primary" onclick="toggleRegistration(true)">🔓 فتح باب التسجيل</button>
+                        <button class="btn btn-danger" onclick="toggleRegistration(false)">🔒 إقفال التسجيل</button>
                     </div>
-                    <div style="flex:1;">
-                        <strong style="color:var(--olive);">م2 (البنات) - <span id="team2Count">0</span></strong>
-                        <div class="participants-list" id="team2List"></div>
+                    <div class="status-line" id="regStatus">التسجيل مغلق</div>
+                    <div class="row" style="margin-top:10px; align-items:flex-start;">
+                        <div style="flex:1;">
+                            <strong style="color:var(--olive);">م1 (الشباب) - <span id="team1Count">0</span></strong>
+                            <div class="participants-list" id="team1List"></div>
+                        </div>
+                        <div style="flex:1;">
+                            <strong style="color:var(--olive);">م2 (البنات) - <span id="team2Count">0</span></strong>
+                            <div class="participants-list" id="team2List"></div>
+                        </div>
                     </div>
                 </div>
+
+                <footer class="controls-fixed">
+                    <button class="btn btn-danger" onclick="resetScoresOnly()">🔄 تصفير النقاط فقط</button>
+                    <button class="btn btn-danger" onclick="if(confirm('هل أنت متأكد من إعادة تعيين كل شيء؟')) resetAll()">🗑 إعادة تعيين كاملة</button>
+                </footer>
             </div>
 
-            <footer class="controls-fixed">
-                <button class="btn btn-danger" onclick="resetScoresOnly()">🔄 تصفير النقاط فقط</button>
-                <button class="btn btn-danger" onclick="if(confirm('هل أنت متأكد من إعادة تعيين كل شيء؟')) resetAll()">🗑️ إعادة تعيين كاملة</button>
-            </footer>
+            <!-- شاشة: إضافة قسم جديد -->
+            <div id="addSectionScreen" style="display:none;">
+                <button class="btn btn-outline btn-sm big-back-btn" onclick="backToSettingsHome()">→ رجوع</button>
+                <h3>إضافة قسم خاص جديد</h3>
+                <label>اسم القسم</label>
+                <input type="text" id="newSectionName" placeholder="مثال: أسماء أولاد">
+
+                <label>نوع الأسئلة</label>
+                <div class="row">
+                    <button class="btn btn-outline" id="newSecTypeDirectBtn" onclick="setNewSectionType('direct')">مباشر</button>
+                    <button class="btn btn-outline" id="newSecTypeChoicesBtn" onclick="setNewSectionType('choices')">خيارات</button>
+                </div>
+
+                <footer class="controls-fixed">
+                    <button class="btn btn-primary" onclick="createNewSection()">💾 حفظ القسم</button>
+                </footer>
+            </div>
+
+            <!-- شاشة: قائمة الأقسام الخاصة للتعديل -->
+            <div id="editSectionsListScreen" style="display:none;">
+                <button class="btn btn-outline btn-sm big-back-btn" onclick="backToSettingsHome()">→ رجوع</button>
+                <h3>الأقسام الخاصة</h3>
+                <div id="customSectionsListBox"></div>
+            </div>
+
+            <!-- شاشة: عرض/تعديل أسئلة قسم خاص واحد -->
+            <div id="editSingleSectionScreen" style="display:none;">
+                <button class="btn btn-outline btn-sm big-back-btn" onclick="showEditSectionsScreen()">→ رجوع لقائمة الأقسام</button>
+                <div class="row" style="justify-content:space-between;">
+                    <h3 id="editSectionTitle">قسم</h3>
+                    <button class="btn btn-danger btn-sm" onclick="deleteCurrentSection()">🗑 حذف القسم بالكامل</button>
+                </div>
+
+                <h4>إضافة سؤال جديد</h4>
+                <label>نص السؤال</label>
+                <textarea id="newQText" placeholder="اكتب السؤال هنا..."></textarea>
+
+                <div id="directAnswerBox">
+                    <label>الإجابة الصحيحة</label>
+                    <input type="text" id="newQAnswer" placeholder="اكتب الإجابة الصحيحة">
+                </div>
+
+                <div id="choicesAnswerBox" style="display:none;">
+                    <label>الخيارات الأربعة (حدد الصحيح بالدائرة)</label>
+                    <div class="choice-input-row"><input type="radio" name="correctChoice" value="0"><input type="text" class="choiceTextInput" placeholder="الخيار الأول"></div>
+                    <div class="choice-input-row"><input type="radio" name="correctChoice" value="1"><input type="text" class="choiceTextInput" placeholder="الخيار الثاني"></div>
+                    <div class="choice-input-row"><input type="radio" name="correctChoice" value="2"><input type="text" class="choiceTextInput" placeholder="الخيار الثالث"></div>
+                    <div class="choice-input-row"><input type="radio" name="correctChoice" value="3"><input type="text" class="choiceTextInput" placeholder="الخيار الرابع"></div>
+                </div>
+
+                <button class="btn btn-primary" onclick="submitQuestion()" style="margin-top:10px;">💾 إضافة السؤال</button>
+
+                <h4 style="margin-top:24px;">أسئلة هذا القسم</h4>
+                <div id="sectionQuestionsList"></div>
+            </div>
         </div>
 
         <!-- ===================== تبويب أسئلة وأجوبة ===================== -->
         <div class="panel" id="panel-qna">
-            <h3>بنك الأسئلة الثابتة</h3>
-            <select id="bankSectionSelect"></select>
-            <div id="bankQuestionsList" style="margin-top:10px;"></div>
 
-            <h3 style="margin-top:24px;">سؤال خاص (لحظي)</h3>
-            <label>نص السؤال</label>
-            <textarea id="customQText" placeholder="اكتب السؤال هنا..."></textarea>
+            <!-- الشاشة الرئيسية: اختيار قسم -->
+            <div id="qnaHome">
+                <h3>بنك الأسئلة الثابتة</h3>
+                <div id="bankSectionsBox"></div>
 
-            <label>نوع السؤال</label>
-            <div class="row">
-                <button class="btn btn-outline" id="typeDirectBtn" onclick="setQType('direct')">إجابة مباشرة</button>
-                <button class="btn btn-outline" id="typeChoicesBtn" onclick="setQType('choices')">خيارات متعددة</button>
+                <h3 style="margin-top:24px;">الأسئلة الخاصة</h3>
+                <div id="customSectionsBoxQna"></div>
+                <p class="empty-hint" id="noCustomSectionsHint" style="display:none;">لا توجد أقسام خاصة بعد. أضفها من تبويب "الإعدادات والمجموعات".</p>
             </div>
 
-            <div id="choicesBox" style="display:none; margin-top:10px;">
-                <div class="choice-row"><input type="text" class="choiceInput" placeholder="خيار أ"></div>
-                <div class="choice-row"><input type="text" class="choiceInput" placeholder="خيار ب"></div>
-                <div class="choice-row"><input type="text" class="choiceInput" placeholder="خيار ج"></div>
-                <button class="btn btn-outline" onclick="addChoiceField()" style="font-size:12px;">+ إضافة خيار</button>
+            <!-- شاشة: إعداد المسابقة بعد اختيار قسم -->
+            <div id="qnaSetupScreen" style="display:none;">
+                <button class="btn btn-outline btn-sm big-back-btn" onclick="backToQnaHome()">→ رجوع</button>
+                <h3>إعداد المسابقة: <span id="setupSectionName"></span></h3>
+                <p style="color:var(--text-dim); font-size:13px;">النوع: <strong id="setupSectionType"></strong></p>
+
+                <label>مدة كل سؤال (ثانية) - ثابتة طوال المسابقة</label>
+                <div class="duration-options" id="qnaDurationOptions">
+                    <div class="duration-chip" data-val="15">15</div>
+                    <div class="duration-chip selected" data-val="20">20</div>
+                    <div class="duration-chip" data-val="25">25</div>
+                    <div class="duration-chip" data-val="30">30</div>
+                </div>
+
+                <label>نظام المشاركة</label>
+                <div class="row">
+                    <button class="btn btn-outline" id="setupModeIndividualBtn" onclick="setTeamMode(false)">فردي</button>
+                    <button class="btn btn-outline" id="setupModeTeamBtn" onclick="setTeamMode(true)">مجموعات</button>
+                </div>
+
+                <label>عدد الأسئلة</label>
+                <div class="count-options" id="questionCountOptions">
+                    <div class="duration-chip" data-val="5">5</div>
+                    <div class="duration-chip selected" data-val="10">10</div>
+                    <div class="duration-chip" data-val="15">15</div>
+                    <div class="duration-chip" data-val="20">20</div>
+                    <div class="duration-chip" data-val="25">25</div>
+                    <div class="duration-chip" data-val="30">30</div>
+                </div>
+
+                <footer class="controls-fixed">
+                    <button class="btn btn-primary" onclick="launchCompetition()">🚀 بدء المسابقة</button>
+                </footer>
             </div>
 
-            <label>الإجابة الصحيحة</label>
-            <input type="text" id="customQAnswer" placeholder="اكتب الإجابة الصحيحة بالضبط">
+            <!-- شاشة: المسابقة الحية (هذا ما يُشارك مع المشاهدين) -->
+            <div id="qnaLiveScreen" style="display:none;">
+                <div class="live-competition">
+                    <div class="badge" id="liveBadge">مسابقة فردية</div>
+                    <div class="meta-line">القسم: <strong id="liveSectionName"></strong></div>
+                    <div class="meta-line">النوع: <strong id="liveTypeLabel"></strong></div>
+                    <div class="meta-line" id="liveProgress"></div>
 
-            <label>مدة الجولة (ثانية)</label>
-            <div class="duration-options" id="qnaDurationOptions">
-                <div class="duration-chip" data-val="15">15</div>
-                <div class="duration-chip selected" data-val="20">20</div>
-                <div class="duration-chip" data-val="25">25</div>
-                <div class="duration-chip" data-val="30">30</div>
+                    <div id="liveTimerBox" style="display:none;">
+                        <div class="timer" id="liveTimer">--</div>
+                    </div>
+
+                    <div class="question-text" id="liveQuestionText"></div>
+
+                    <div class="choices-grid" id="liveChoicesGrid" style="display:none;"></div>
+
+                    <div id="liveWaitingNext" class="status-line" style="display:none;">⏳ السؤال التالي بعد لحظات...</div>
+                </div>
+
+                <footer class="controls-fixed">
+                    <button class="btn btn-danger" onclick="if(confirm('هل تريد إيقاف المسابقة؟')) stopCompetition()">⏹ إيقاف المسابقة</button>
+                </footer>
             </div>
 
-            <footer class="controls-fixed">
-                <button class="btn btn-primary" onclick="startCustomQuestion()">🚀 بدء السؤال</button>
-                <button class="btn btn-danger" id="endQnaBtn" onclick="endRoundManually()" disabled>⏹️ إنهاء الجولة الآن</button>
-            </footer>
-
-            <div class="status-line" id="qnaStatus">لا توجد جولة نشطة</div>
-            <div id="qnaCorrectList" class="correct-list"></div>
-        </div>
-
-        <!-- ===================== تبويب سباق كتابة ===================== -->
-        <div class="panel" id="panel-race">
-            <h3>سباق كتابة كلمة/جملة</h3>
-            <label>الكلمة أو الجملة المطلوبة</label>
-            <input type="text" id="racePhrase" placeholder="مثال: أحمد الأفضل">
-
-            <label>مدة الجولة (ثانية)</label>
-            <div class="duration-options" id="raceDurationOptions">
-                <div class="duration-chip" data-val="15">15</div>
-                <div class="duration-chip selected" data-val="20">20</div>
-                <div class="duration-chip" data-val="25">25</div>
-                <div class="duration-chip" data-val="30">30</div>
+            <!-- شاشة: نتيجة نهائية بعد انتهاء المسابقة -->
+            <div id="qnaFinalScreen" style="display:none;">
+                <div class="final-result">
+                    <h2>🏁 انتهت المسابقة</h2>
+                    <button class="btn btn-gold" onclick="toggleFinalList()">👥 أصحاب الإجابات الصحيحة</button>
+                    <div id="finalCorrectList" class="correct-counts-list" style="display:none;"></div>
+                </div>
+                <footer class="controls-fixed">
+                    <button class="btn btn-primary" onclick="dismissFinalResults()">✅ إنهاء وعودة للرئيسية</button>
+                </footer>
             </div>
-
-            <footer class="controls-fixed">
-                <button class="btn btn-primary" onclick="startRace()">🚀 بدء السباق</button>
-                <button class="btn btn-danger" id="endRaceBtn" onclick="endRoundManually()" disabled>⏹️ إنهاء الجولة الآن</button>
-            </footer>
-
-            <div class="status-line" id="raceStatus">لا يوجد سباق نشط</div>
-            <div id="raceCorrectList" class="correct-list"></div>
         </div>
 
         <!-- ===================== تبويب سحب عشوائي ===================== -->
@@ -308,8 +362,8 @@
             <input type="text" id="drawKeyword" placeholder="مثال: انضم">
 
             <footer class="controls-fixed">
-                <button class="btn btn-primary" onclick="startDraw()">▶️ بدء جمع المشاركين</button>
-                <button class="btn btn-outline" onclick="stopDrawCollection()">⏹️ إيقاف الجمع</button>
+                <button class="btn btn-primary" onclick="startDraw()">▶ بدء جمع المشاركين</button>
+                <button class="btn btn-outline" onclick="stopDrawCollection()">⏹ إيقاف الجمع</button>
                 <button class="btn btn-gold" onclick="pickDrawWinner()">🎉 سحب فائز</button>
             </footer>
 
@@ -338,10 +392,16 @@
 <script>
     const socket = io({ transports: ['websocket', 'polling'] });
     let currentState = null;
-    let questionBank = {};
-    let selectedQType = 'direct';
+    let bankSections = [];
+    let customSections = {};
+
+    let newSectionType = 'direct';
+    let selectedQuestionSource = null;  // 'bank' | 'custom'
+    let selectedQuestionSectionName = null;
+    let currentEditingSectionName = null;
     let qnaDuration = 20;
-    let raceDuration = 20;
+    let questionCount = 10;
+    let liveCountdownInterval = null;
 
     // ---- حالة الاتصال ----
     socket.on('connect', () => {
@@ -363,7 +423,182 @@
         });
     });
 
-    // ---- اختيار المدة ----
+    // ==================== تبويب الإعدادات: التنقل بين الشاشات ====================
+    function showScreen(id) {
+        ['settingsHome', 'addSectionScreen', 'editSectionsListScreen', 'editSingleSectionScreen'].forEach(s => {
+            document.getElementById(s).style.display = (s === id) ? 'block' : 'none';
+        });
+    }
+    function backToSettingsHome() { showScreen('settingsHome'); }
+    function showAddSectionScreen() {
+        document.getElementById('newSectionName').value = '';
+        setNewSectionType('direct');
+        showScreen('addSectionScreen');
+    }
+    function setNewSectionType(type) {
+        newSectionType = type;
+        document.getElementById('newSecTypeDirectBtn').classList.toggle('btn-primary', type === 'direct');
+        document.getElementById('newSecTypeChoicesBtn').classList.toggle('btn-primary', type === 'choices');
+    }
+    function createNewSection() {
+        const name = document.getElementById('newSectionName').value.trim();
+        if (!name) { alert('يرجى كتابة اسم القسم'); return; }
+        socket.emit('createCustomSection', { name, type: newSectionType });
+        backToSettingsHome();
+    }
+
+    function showEditSectionsScreen() {
+        renderCustomSectionsListBox();
+        showScreen('editSectionsListScreen');
+    }
+
+    function renderCustomSectionsListBox() {
+        const box = document.getElementById('customSectionsListBox');
+        const names = Object.keys(customSections);
+        if (names.length === 0) {
+            box.innerHTML = '<p class="empty-hint">لا توجد أقسام خاصة بعد. أضف قسماً جديداً أولاً.</p>';
+            return;
+        }
+        box.innerHTML = names.map(name => {
+            const sec = customSections[name];
+            const typeLabel = sec.type === 'choices' ? 'خيارات' : 'مباشر';
+            return `
+                <div class="section-card" onclick="openSectionEditor('${name}')">
+                    <div>
+                        <div class="name">${name}</div>
+                        <div class="meta">${typeLabel} · ${sec.questions.length} سؤال</div>
+                    </div>
+                    <span>›</span>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function openSectionEditor(sectionName) {
+        currentEditingSectionName = sectionName;
+        const sec = customSections[sectionName];
+        document.getElementById('editSectionTitle').innerText = sectionName;
+        document.getElementById('directAnswerBox').style.display = sec.type === 'direct' ? 'block' : 'none';
+        document.getElementById('choicesAnswerBox').style.display = sec.type === 'choices' ? 'block' : 'none';
+        clearQuestionForm();
+        renderSectionQuestionsList();
+        showScreen('editSingleSectionScreen');
+    }
+
+    function clearQuestionForm() {
+        document.getElementById('newQText').value = '';
+        document.getElementById('newQAnswer').value = '';
+        document.querySelectorAll('.choiceTextInput').forEach(i => i.value = '');
+        document.querySelectorAll('input[name=correctChoice]').forEach(r => r.checked = false);
+    }
+
+    function deleteCurrentSection() {
+        if (!confirm('هل أنت متأكد من حذف هذا القسم بكل أسئلته؟')) return;
+        socket.emit('deleteCustomSection', currentEditingSectionName);
+        showEditSectionsScreen();
+    }
+
+    function submitQuestion() {
+        const text = document.getElementById('newQText').value.trim();
+        if (!text) { alert('يرجى كتابة نص السؤال'); return; }
+
+        const sec = customSections[currentEditingSectionName];
+        if (sec.type === 'direct') {
+            const answer = document.getElementById('newQAnswer').value.trim();
+            if (!answer) { alert('يرجى كتابة الإجابة الصحيحة'); return; }
+            socket.emit('addCustomQuestion', { sectionName: currentEditingSectionName, text, correctAnswer: answer });
+        } else {
+            const choices = Array.from(document.querySelectorAll('.choiceTextInput')).map(i => i.value.trim());
+            if (choices.some(c => !c)) { alert('يرجى تعبئة كل الخيارات الأربعة'); return; }
+            const checkedRadio = document.querySelector('input[name=correctChoice]:checked');
+            if (!checkedRadio) { alert('يرجى تحديد الإجابة الصحيحة'); return; }
+            socket.emit('addCustomQuestion', {
+                sectionName: currentEditingSectionName, text, choices,
+                correctIndex: parseInt(checkedRadio.value, 10)
+            });
+        }
+        clearQuestionForm();
+    }
+
+    function renderSectionQuestionsList() {
+        const sec = customSections[currentEditingSectionName];
+        const box = document.getElementById('sectionQuestionsList');
+        if (!sec || sec.questions.length === 0) {
+            box.innerHTML = '<p class="empty-hint">لا توجد أسئلة في هذا القسم بعد.</p>';
+            return;
+        }
+        box.innerHTML = sec.questions.map(q => {
+            let detail = sec.type === 'direct'
+                ? `الإجابة: ${q.correctAnswer}`
+                : `الصحيح: ${q.choices[q.correctIndex]}`;
+            return `
+                <div class="section-card" style="cursor:default;">
+                    <div>
+                        <div class="name">${q.text}</div>
+                        <div class="meta">${detail}</div>
+                    </div>
+                    <button class="btn btn-danger btn-sm" onclick="deleteQuestion(${q.id})">حذف</button>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function deleteQuestion(questionId) {
+        socket.emit('deleteCustomQuestion', { sectionName: currentEditingSectionName, questionId });
+    }
+
+    // ==================== نظام فردي/مجموعات ====================
+    function setTeamMode(isTeam) { socket.emit('setTeamMode', isTeam); }
+    function toggleRegistration(isOpen) { socket.emit('toggleRegistration', isOpen); }
+    function resetScoresOnly() { socket.emit('resetScoresOnly'); }
+    function resetAll() { socket.emit('resetAll'); }
+
+    // ==================== تبويب أسئلة وأجوبة ====================
+    function showQnaScreen(id) {
+        ['qnaHome', 'qnaSetupScreen', 'qnaLiveScreen', 'qnaFinalScreen'].forEach(s => {
+            document.getElementById(s).style.display = (s === id) ? 'block' : 'none';
+        });
+    }
+
+    function renderQnaHome() {
+        const bankBox = document.getElementById('bankSectionsBox');
+        bankBox.innerHTML = bankSections.map(s => `
+            <div class="section-card" onclick="selectSection('bank', '${s.name}', '${s.type}')">
+                <div>
+                    <div class="name">${s.name}</div>
+                    <div class="meta">${s.type === 'choices' ? 'خيارات' : 'مباشر'} · ${s.count} سؤال</div>
+                </div>
+                <span>›</span>
+            </div>
+        `).join('') || '<p class="empty-hint">لا توجد أقسام ثابتة بعد.</p>';
+
+        const customNames = Object.keys(customSections);
+        const customBox = document.getElementById('customSectionsBoxQna');
+        document.getElementById('noCustomSectionsHint').style.display = customNames.length === 0 ? 'block' : 'none';
+        customBox.innerHTML = customNames.map(name => {
+            const sec = customSections[name];
+            return `
+                <div class="section-card" onclick="selectSection('custom', '${name}', '${sec.type}')">
+                    <div>
+                        <div class="name">${name}</div>
+                        <div class="meta">${sec.type === 'choices' ? 'خيارات' : 'مباشر'} · ${sec.questions.length} سؤال</div>
+                    </div>
+                    <span>›</span>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function selectSection(source, sectionName, type) {
+        selectedQuestionSource = source;
+        selectedQuestionSectionName = sectionName;
+        document.getElementById('setupSectionName').innerText = sectionName;
+        document.getElementById('setupSectionType').innerText = type === 'choices' ? 'خيارات' : 'مباشر';
+        showQnaScreen('qnaSetupScreen');
+    }
+
+    function backToQnaHome() { showQnaScreen('qnaHome'); }
+
     document.querySelectorAll('#qnaDurationOptions .duration-chip').forEach(chip => {
         chip.addEventListener('click', () => {
             document.querySelectorAll('#qnaDurationOptions .duration-chip').forEach(c => c.classList.remove('selected'));
@@ -371,71 +606,38 @@
             qnaDuration = parseInt(chip.dataset.val);
         });
     });
-    document.querySelectorAll('#raceDurationOptions .duration-chip').forEach(chip => {
+    document.querySelectorAll('#questionCountOptions .duration-chip').forEach(chip => {
         chip.addEventListener('click', () => {
-            document.querySelectorAll('#raceDurationOptions .duration-chip').forEach(c => c.classList.remove('selected'));
+            document.querySelectorAll('#questionCountOptions .duration-chip').forEach(c => c.classList.remove('selected'));
             chip.classList.add('selected');
-            raceDuration = parseInt(chip.dataset.val);
+            questionCount = parseInt(chip.dataset.val);
         });
     });
 
-    // ---- نظام فردي/مجموعات ----
-    function setTeamMode(isTeam) {
-        socket.emit('setTeamMode', isTeam);
+    function launchCompetition() {
+        socket.emit('startCompetition', {
+            source: selectedQuestionSource,
+            sectionName: selectedQuestionSectionName,
+            duration: qnaDuration,
+            totalQuestions: questionCount
+        });
     }
 
-    function toggleRegistration(isOpen) {
-        socket.emit('toggleRegistration', isOpen);
+    function stopCompetition() {
+        socket.emit('stopCompetition');
     }
 
-    function resetScoresOnly() { socket.emit('resetScoresOnly'); }
-    function resetAll() { socket.emit('resetAll'); }
-
-    // ---- سؤال خاص ----
-    function setQType(type) {
-        selectedQType = type;
-        document.getElementById('typeDirectBtn').classList.toggle('btn-primary', type === 'direct');
-        document.getElementById('typeChoicesBtn').classList.toggle('btn-primary', type === 'choices');
-        document.getElementById('choicesBox').style.display = type === 'choices' ? 'block' : 'none';
-    }
-    setQType('direct');
-
-    function addChoiceField() {
-        const box = document.getElementById('choicesBox');
-        const div = document.createElement('div');
-        div.className = 'choice-row';
-        div.innerHTML = '<input type="text" class="choiceInput" placeholder="خيار إضافي">';
-        box.insertBefore(div, box.querySelector('button'));
+    function dismissFinalResults() {
+        socket.emit('dismissFinalResults');
+        showQnaScreen('qnaHome');
     }
 
-    function startCustomQuestion() {
-        const text = document.getElementById('customQText').value.trim();
-        const answer = document.getElementById('customQAnswer').value.trim();
-        if (!text || !answer) { alert('يرجى تعبئة نص السؤال والإجابة الصحيحة'); return; }
-
-        let choices = [];
-        if (selectedQType === 'choices') {
-            choices = Array.from(document.querySelectorAll('.choiceInput')).map(i => i.value.trim()).filter(Boolean);
-        }
-
-        socket.emit('startQuestion', { text, type: selectedQType, choices, correctAnswer: answer, duration: qnaDuration });
+    function toggleFinalList() {
+        const box = document.getElementById('finalCorrectList');
+        box.style.display = box.style.display === 'none' ? 'block' : 'none';
     }
 
-    function startBankQuestion(section, index) {
-        const q = questionBank[section][index];
-        socket.emit('startQuestion', { text: q.text, type: q.type, choices: q.choices || [], correctAnswer: q.correctAnswer, duration: qnaDuration });
-    }
-
-    function endRoundManually() { socket.emit('endRoundManually'); }
-
-    // ---- سباق كتابة ----
-    function startRace() {
-        const phrase = document.getElementById('racePhrase').value.trim();
-        if (!phrase) { alert('يرجى إدخال الكلمة أو الجملة'); return; }
-        socket.emit('startRace', { targetPhrase: phrase, duration: raceDuration });
-    }
-
-    // ---- سحب عشوائي ----
+    // ==================== سحب عشوائي ====================
     function startDraw() {
         const keyword = document.getElementById('drawKeyword').value.trim();
         if (!keyword) { alert('يرجى إدخال كلمة مفتاحية'); return; }
@@ -444,46 +646,22 @@
     function stopDrawCollection() { socket.emit('stopDrawCollection'); }
     function pickDrawWinner() { socket.emit('pickDrawWinner'); }
 
-    // ---- استقبال تحديثات الحالة ----
+    // ==================== استقبال تحديثات من السيرفر ====================
+    socket.on('sectionsUpdate', (data) => {
+        bankSections = data.bankSections;
+        customSections = data.customSections;
+        renderQnaHome();
+        if (document.getElementById('editSectionsListScreen').style.display === 'block') {
+            renderCustomSectionsListBox();
+        }
+        if (document.getElementById('editSingleSectionScreen').style.display === 'block' && currentEditingSectionName) {
+            renderSectionQuestionsList();
+        }
+    });
+
     socket.on('stateUpdate', (state) => {
         currentState = state;
         renderState();
-    });
-
-    socket.on('questionBankUpdate', (bank) => {
-        questionBank = bank;
-        renderQuestionBank();
-    });
-
-    socket.on('questionStarted', (q) => {
-        document.getElementById('qnaStatus').innerText = '🟢 جولة نشطة: ' + q.text;
-        document.getElementById('qnaStatus').classList.add('live');
-        document.getElementById('raceStatus').innerText = '🟢 السباق جارٍ: ' + q.text;
-        document.getElementById('raceStatus').classList.add('live');
-        document.getElementById('endQnaBtn').disabled = false;
-        document.getElementById('endRaceBtn').disabled = false;
-        document.getElementById('qnaCorrectList').innerHTML = '';
-        document.getElementById('raceCorrectList').innerHTML = '';
-    });
-
-    socket.on('newCorrectAnswer', (data) => {
-        const list = document.getElementById('qnaCorrectList');
-        const raceList = document.getElementById('raceCorrectList');
-        const num = list.children.length + 1;
-        const item = document.createElement('div');
-        item.className = 'item';
-        item.innerHTML = `<span><span class="num">#${num}</span> ${data.name}</span><span>${data.team || ''}</span>`;
-        list.appendChild(item.cloneNode(true));
-        raceList.appendChild(item);
-    });
-
-    socket.on('roundEnded', (data) => {
-        document.getElementById('qnaStatus').innerText = '⚪ انتهت الجولة. الإجابة الصحيحة: ' + data.correctAnswer;
-        document.getElementById('qnaStatus').classList.remove('live');
-        document.getElementById('raceStatus').innerText = '⚪ انتهى السباق. العبارة: ' + data.correctAnswer;
-        document.getElementById('raceStatus').classList.remove('live');
-        document.getElementById('endQnaBtn').disabled = true;
-        document.getElementById('endRaceBtn').disabled = true;
     });
 
     socket.on('drawParticipantsUpdate', (list) => {
@@ -517,8 +695,11 @@
     function renderState() {
         if (!currentState) return;
 
+        // نظام فردي/مجموعات (الإعدادات + شاشة الإعداد)
         document.getElementById('modeIndividualBtn').classList.toggle('btn-primary', !currentState.teamMode);
         document.getElementById('modeTeamBtn').classList.toggle('btn-primary', currentState.teamMode);
+        document.getElementById('setupModeIndividualBtn').classList.toggle('btn-primary', !currentState.teamMode);
+        document.getElementById('setupModeTeamBtn').classList.toggle('btn-primary', currentState.teamMode);
         document.getElementById('teamRegistrationBox').style.display = currentState.teamMode ? 'block' : 'none';
 
         document.getElementById('regStatus').innerText = currentState.registrationOpen ? '🟢 التسجيل مفتوح - بانتظار م1/م2' : '🔴 التسجيل مغلق';
@@ -528,26 +709,99 @@
         document.getElementById('team2Count').innerText = currentState.teams['م2'].length;
         document.getElementById('team1List').innerHTML = currentState.teams['م1'].map(n => `<span>${n}</span>`).join('');
         document.getElementById('team2List').innerHTML = currentState.teams['م2'].map(n => `<span>${n}</span>`).join('');
+
+        // حالة تبويب أسئلة وأجوبة
+        renderQnaState();
     }
 
-    function renderQuestionBank() {
-        const select = document.getElementById('bankSectionSelect');
-        select.innerHTML = Object.keys(questionBank).map(sec => `<option value="${sec}">${sec}</option>`).join('');
-        select.onchange = renderBankQuestionsList;
-        renderBankQuestionsList();
+    function renderQnaState() {
+        if (currentState.competitionFinished) {
+            renderFinalResults();
+            showQnaScreen('qnaFinalScreen');
+            return;
+        }
+
+        if (currentState.competitionActive) {
+            showQnaScreen('qnaLiveScreen');
+            renderLiveCompetition();
+            return;
+        }
+
+        // لا مسابقة نشطة ولا نتيجة معلّقة: تأكد أننا في الشاشة المناسبة
+        // (لا نجبر العودة للرئيسية إن كان الأدمن وسط إعداد مسابقة جديدة)
+        const setupVisible = document.getElementById('qnaSetupScreen').style.display === 'block';
+        if (!setupVisible) {
+            const liveVisible = document.getElementById('qnaLiveScreen').style.display === 'block';
+            if (liveVisible) showQnaScreen('qnaHome');
+        }
     }
 
-    function renderBankQuestionsList() {
-        const section = document.getElementById('bankSectionSelect').value;
-        const list = document.getElementById('bankQuestionsList');
-        if (!section || !questionBank[section]) { list.innerHTML = ''; return; }
-        list.innerHTML = questionBank[section].map((q, i) => `
-            <div class="bank-question-item">
-                <span>${q.text}</span>
-                <button class="btn btn-primary" onclick="startBankQuestion('${section}', ${i})">بدء</button>
-            </div>
-        `).join('');
+    function renderLiveCompetition() {
+        document.getElementById('liveBadge').innerText = currentState.teamMode ? 'مسابقة مجموعات' : 'مسابقة فردية';
+        document.getElementById('liveSectionName').innerText = currentState.competitionSectionName || '';
+        document.getElementById('liveTypeLabel').innerText = currentState.competitionType === 'choices' ? 'خيارات' : 'مباشر';
+        document.getElementById('liveProgress').innerText = `السؤال ${currentState.competitionAskedCount} من ${currentState.competitionTotalQuestions}`;
+
+        const q = currentState.currentQuestion;
+        const timerBox = document.getElementById('liveTimerBox');
+        const waitingBox = document.getElementById('liveWaitingNext');
+        const choicesGrid = document.getElementById('liveChoicesGrid');
+
+        if (currentState.roundActive && q) {
+            document.getElementById('liveQuestionText').innerText = q.text;
+            waitingBox.style.display = 'none';
+            timerBox.style.display = 'block';
+
+            if (currentState.competitionType === 'choices' && q.choices) {
+                choicesGrid.style.display = 'grid';
+                choicesGrid.innerHTML = q.choices.map((c, i) => `
+                    <div class="choice-box"><span class="choice-num">${i+1}.</span> ${c}</div>
+                `).join('');
+            } else {
+                choicesGrid.style.display = 'none';
+                choicesGrid.innerHTML = '';
+            }
+
+            startLiveCountdown();
+        } else {
+            waitingBox.style.display = 'block';
+            timerBox.style.display = 'none';
+            choicesGrid.style.display = 'none';
+            stopLiveCountdown();
+        }
     }
+
+    function startLiveCountdown() {
+        stopLiveCountdown();
+        const duration = currentState.competitionDuration;
+        const startTime = currentState.roundStartTime;
+
+        function tick() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const remaining = Math.max(0, duration - elapsed);
+            document.getElementById('liveTimer').innerText = remaining;
+            if (remaining <= 0) stopLiveCountdown();
+        }
+        tick();
+        liveCountdownInterval = setInterval(tick, 500);
+    }
+
+    function stopLiveCountdown() {
+        if (liveCountdownInterval) { clearInterval(liveCountdownInterval); liveCountdownInterval = null; }
+    }
+
+    function renderFinalResults() {
+        const counts = currentState.competitionCorrectCounts || {};
+        const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+        const box = document.getElementById('finalCorrectList');
+        box.innerHTML = sorted.map(([name, count]) => `
+            <div class="item"><span>${name}</span><span class="count">${count}</span></div>
+        `).join('') || '<p class="empty-hint">لا توجد إجابات صحيحة مسجلة.</p>';
+        box.style.display = 'none';
+    }
+
+    // تحميل أولي
+    renderQnaHome();
 </script>
 </body>
 </html>
