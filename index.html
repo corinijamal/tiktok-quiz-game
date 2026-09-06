@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مسابقات البث - لوحة التحكم</title>
+<script src="/socket.io/socket.io.js"></script>
+<style>
+    :root {
+        --bg: #21241a;
+        --surface: #363b28;
+        --surface-2: #2c3022;
+        --olive: #8a9a5b;
+        --olive-dim: #6b7a45;
+        --gold: #c9a24b;
+        --red: #b5453b;
+        --green: #6e9c5a;
+        --text: #edead8;
+        --text-dim: #a8ab96;
+        --border: #454b34;
+    }
+    * { box-sizing: border-box; }
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+    }
+    header {
+        background: var(--surface-2);
+        border-bottom: 1px solid var(--border);
+        padding: 16px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    header h1 { font-size: 20px; margin: 0; color: var(--gold); }
+    header .stream-id { font-size: 13px; color: var(--text-dim); }
+
+    .layout {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 16px;
+        padding: 16px;
+        max-width: 1200px;
+        margin: auto;
+    }
+    @media (max-width: 850px) {
+        .layout { grid-template-columns: 1fr; }
+    }
+
+    .tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+    }
+    .tab-btn {
+        background: var(--surface);
+        color: var(--text-dim);
+        border: 1px solid var(--border);
+        padding: 10px 18px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: bold;
+        transition: 0.2s;
+    }
+    .tab-btn.active {
+        background: var(--olive);
+        color: #1a1c12;
+        border-color: var(--olive);
+    }
+
+    .panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        display: none;
+    }
+    .panel.active { display: block; }
+
+    h3 { margin-top: 0; color: var(--gold); font-size: 17px; }
+    label { display: block; font-size: 13px; color: var(--text-dim); margin: 12px 0 5px; }
+
+    input[type=text], select, textarea {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--surface-2);
+        color: var(--text);
+        font-size: 14px;
+        font-family: inherit;
+    }
+    textarea { resize: vertical; min-height: 60px; }
+
+    .btn {
+        padding: 10px 18px;
+        border-radius: 8px;
+        border: none;
+        font-weight: bold;
+        cursor: pointer;
+        font-size: 14px;
+        transition: 0.2s;
+    }
+    .btn-primary { background: var(--olive); color: #1a1c12; }
+    .btn-primary:hover { background: var(--olive-dim); }
+    .btn-danger { background: var(--red); color: white; }
+    .btn-gold { background: var(--gold); color: #1a1c12; }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .duration-options { display: flex; gap: 8px; margin-top: 5px; }
+    .duration-chip {
+        padding: 8px 14px; border-radius: 20px; border: 1px solid var(--border);
+        background: var(--surface-2); cursor: pointer; font-size: 13px; color: var(--text-dim);
+    }
+    .duration-chip.selected { background: var(--gold); color: #1a1c12; border-color: var(--gold); font-weight: bold; }
+
+    .choice-row { display: flex; gap: 8px; margin-bottom: 8px; }
+    .choice-row input { flex: 1; }
+
+    .status-line {
+        margin-top: 16px; padding: 12px; border-radius: 8px;
+        background: var(--surface-2); font-size: 14px; border: 1px solid var(--border);
+    }
+    .status-line.live { border-color: var(--green); color: var(--green); }
+
+    /* لوحة المتصدرين الجانبية */
+    .sidebar {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px;
+        height: fit-content;
+        position: sticky;
+        top: 16px;
+    }
+    .sidebar h3 { display: flex; justify-content: space-between; align-items: center; }
+    .leaderboard-item {
+        display: flex; justify-content: space-between; padding: 8px 10px;
+        border-bottom: 1px solid var(--border); font-size: 14px;
+    }
+    .leaderboard-item .rank { color: var(--gold); font-weight: bold; margin-left: 6px; }
+    .leaderboard-item .pts { color: var(--olive); font-weight: bold; }
+    .team-score-box {
+        display: flex; justify-content: space-around; margin-bottom: 10px;
+    }
+    .team-score-box .team {
+        text-align: center; background: var(--surface-2); border-radius: 8px; padding: 12px; flex: 1; margin: 0 5px;
+    }
+    .team-score-box .team-name { font-size: 13px; color: var(--text-dim); }
+    .team-score-box .team-points { font-size: 26px; font-weight: bold; color: var(--gold); }
+
+    .bank-section { margin-bottom: 14px; }
+    .bank-section-title { font-weight: bold; color: var(--olive); margin-bottom: 6px; cursor: pointer; }
+    .bank-question-item {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 8px; border-bottom: 1px solid var(--border); font-size: 13px;
+    }
+    .bank-question-item button { font-size: 12px; padding: 5px 10px; }
+
+    .participants-list { max-height: 150px; overflow-y: auto; margin-top: 10px; font-size: 13px; }
+    .participants-list span { display: inline-block; background: var(--surface-2); padding: 4px 10px; border-radius: 12px; margin: 3px; }
+
+    .correct-list { max-height: 200px; overflow-y: auto; margin-top: 10px; }
+    .correct-list .item {
+        display: flex; justify-content: space-between; padding: 6px 10px;
+        background: var(--surface-2); border-radius: 6px; margin-bottom: 5px; font-size: 13px;
+    }
+    .correct-list .item .num { color: var(--gold); font-weight: bold; }
+
+    footer.controls-fixed {
+        display: flex; gap: 10px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);
+    }
+</style>
+</head>
+<body>
+
+<header>
+    <div>
+        <h1>🫒 مسابقات البث</h1>
+        <div class="stream-id">a_7_m_d2</div>
+    </div>
+    <div id="connStatus" class="status-line">جاري الاتصال...</div>
+</header>
+
+<div class="layout">
+    <div class="main-col">
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="settings">⚙️ الإعدادات والمجموعات</button>
+            <button class="tab-btn" data-tab="qna">❓ أسئلة وأجوبة</button>
+            <button class="tab-btn" data-tab="race">🏁 سباق كتابة</button>
+            <button class="tab-btn" data-tab="draw">🎲 سحب عشوائي</button>
+        </div>
+
+        <!-- ===================== تبويب الإعدادات والمجموعات ===================== -->
+        <div class="panel active" id="panel-settings">
+            <h3>نظام المشاركة</h3>
+            <div class="row">
+                <button class="btn btn-outline" id="modeIndividualBtn" onclick="setTeamMode(false)">فردي</button>
+                <button class="btn btn-outline" id="modeTeamBtn" onclick="setTeamMode(true)">مجموعات (م1 / م2)</button>
+            </div>
+
+            <div id="teamRegistrationBox" style="display:none; margin-top:16px;">
+                <h3>تسجيل المجموعات</h3>
+                <p style="color:var(--text-dim); font-size:13px;">يكتب المشاركون "م1" أو "م2" في تعليقات البث للانضمام. م1 = فريق الشباب، م2 = فريق البنات.</p>
+                <div class="row">
+                    <button class="btn btn-primary" onclick="toggleRegistration(true)">🔓 فتح باب التسجيل</button>
+                    <button class="btn btn-danger" onclick="toggleRegistration(false)">🔒 إقفال التسجيل</button>
+                </div>
+                <div class="status-line" id="regStatus">التسجيل مغلق</div>
+                <div class="row" style="margin-top:10px; align-items:flex-start;">
+                    <div style="flex:1;">
+                        <strong style="color:var(--olive);">م1 (الشباب) - <span id="team1Count">0</span></strong>
+                        <div class="participants-list" id="team1List"></div>
+                    </div>
+                    <div style="flex:1;">
+                        <strong style="color:var(--olive);">م2 (البنات) - <span id="team2Count">0</span></strong>
+                        <div class="participants-list" id="team2List"></div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="controls-fixed">
+                <button class="btn btn-danger" onclick="resetScoresOnly()">🔄 تصفير النقاط فقط</button>
+                <button class="btn btn-danger" onclick="if(confirm('هل أنت متأكد من إعادة تعيين كل شيء؟')) resetAll()">🗑️ إعادة تعيين كاملة</button>
+            </footer>
+        </div>
+
+        <!-- ===================== تبويب أسئلة وأجوبة ===================== -->
+        <div class="panel" id="panel-qna">
+            <h3>بنك الأسئلة الثابتة</h3>
+            <select id="bankSectionSelect"></select>
+            <div id="bankQuestionsList" style="margin-top:10px;"></div>
+
+            <h3 style="margin-top:24px;">سؤال خاص (لحظي)</h3>
+            <label>نص السؤال</label>
+            <textarea id="customQText" placeholder="اكتب السؤال هنا..."></textarea>
+
+            <label>نوع السؤال</label>
+            <div class="row">
+                <button class="btn btn-outline" id="typeDirectBtn" onclick="setQType('direct')">إجابة مباشرة</button>
+                <button class="btn btn-outline" id="typeChoicesBtn" onclick="setQType('choices')">خيارات متعددة</button>
+            </div>
+
+            <div id="choicesBox" style="display:none; margin-top:10px;">
+                <div class="choice-row"><input type="text" class="choiceInput" placeholder="خيار أ"></div>
+                <div class="choice-row"><input type="text" class="choiceInput" placeholder="خيار ب"></div>
+                <div class="choice-row"><input type="text" class="choiceInput" placeholder="خيار ج"></div>
+                <button class="btn btn-outline" onclick="addChoiceField()" style="font-size:12px;">+ إضافة خيار</button>
+            </div>
+
+            <label>الإجابة الصحيحة</label>
+            <input type="text" id="customQAnswer" placeholder="اكتب الإجابة الصحيحة بالضبط">
+
+            <label>مدة الجولة (ثانية)</label>
+            <div class="duration-options" id="qnaDurationOptions">
+                <div class="duration-chip" data-val="15">15</div>
+                <div class="duration-chip selected" data-val="20">20</div>
+                <div class="duration-chip" data-val="25">25</div>
+                <div class="duration-chip" data-val="30">30</div>
+            </div>
+
+            <footer class="controls-fixed">
+                <button class="btn btn-primary" onclick="startCustomQuestion()">🚀 بدء السؤال</button>
+                <button class="btn btn-danger" id="endQnaBtn" onclick="endRoundManually()" disabled>⏹️ إنهاء الجولة الآن</button>
+            </footer>
+
+            <div class="status-line" id="qnaStatus">لا توجد جولة نشطة</div>
+            <div id="qnaCorrectList" class="correct-list"></div>
+        </div>
+
+        <!-- ===================== تبويب سباق كتابة ===================== -->
+        <div class="panel" id="panel-race">
+            <h3>سباق كتابة كلمة/جملة</h3>
+            <label>الكلمة أو الجملة المطلوبة</label>
+            <input type="text" id="racePhrase" placeholder="مثال: أحمد الأفضل">
+
+            <label>مدة الجولة (ثانية)</label>
+            <div class="duration-options" id="raceDurationOptions">
+                <div class="duration-chip" data-val="15">15</div>
+                <div class="duration-chip selected" data-val="20">20</div>
+                <div class="duration-chip" data-val="25">25</div>
+                <div class="duration-chip" data-val="30">30</div>
+            </div>
+
+            <footer class="controls-fixed">
+                <button class="btn btn-primary" onclick="startRace()">🚀 بدء السباق</button>
+                <button class="btn btn-danger" id="endRaceBtn" onclick="endRoundManually()" disabled>⏹️ إنهاء الجولة الآن</button>
+            </footer>
+
+            <div class="status-line" id="raceStatus">لا يوجد سباق نشط</div>
+            <div id="raceCorrectList" class="correct-list"></div>
+        </div>
+
+        <!-- ===================== تبويب سحب عشوائي ===================== -->
+        <div class="panel" id="panel-draw">
+            <h3>سحب عشوائي</h3>
+            <label>الكلمة المفتاحية للمشاركة</label>
+            <input type="text" id="drawKeyword" placeholder="مثال: انضم">
+
+            <footer class="controls-fixed">
+                <button class="btn btn-primary" onclick="startDraw()">▶️ بدء جمع المشاركين</button>
+                <button class="btn btn-outline" onclick="stopDrawCollection()">⏹️ إيقاف الجمع</button>
+                <button class="btn btn-gold" onclick="pickDrawWinner()">🎉 سحب فائز</button>
+            </footer>
+
+            <p style="color:var(--text-dim); font-size:13px; margin-top:10px;">عدد المشاركين حتى الآن: <strong id="drawCount">0</strong></p>
+            <div class="participants-list" id="drawList"></div>
+        </div>
+    </div>
+
+    <!-- ===================== الشريط الجانبي: لوحة المتصدرين ===================== -->
+    <div class="sidebar">
+        <h3>🏆 لوحة المتصدرين</h3>
+        <div id="teamScoreBox" class="team-score-box" style="display:none;">
+            <div class="team">
+                <div class="team-name">م1 الشباب</div>
+                <div class="team-points" id="team1Points">0</div>
+            </div>
+            <div class="team">
+                <div class="team-name">م2 البنات</div>
+                <div class="team-points" id="team2Points">0</div>
+            </div>
+        </div>
+        <div id="individualLeaderboard"></div>
+    </div>
+</div>
+
+<script>
+    const socket = io({ transports: ['websocket', 'polling'] });
+    let currentState = null;
+    let questionBank = {};
+    let selectedQType = 'direct';
+    let qnaDuration = 20;
+    let raceDuration = 20;
+
+    // ---- حالة الاتصال ----
+    socket.on('connect', () => {
+        document.getElementById('connStatus').innerText = '🟢 متصل';
+        document.getElementById('connStatus').classList.add('live');
+    });
+    socket.on('disconnect', () => {
+        document.getElementById('connStatus').innerText = '🔴 غير متصل';
+        document.getElementById('connStatus').classList.remove('live');
+    });
+
+    // ---- التبويبات ----
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+        });
+    });
+
+    // ---- اختيار المدة ----
+    document.querySelectorAll('#qnaDurationOptions .duration-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            document.querySelectorAll('#qnaDurationOptions .duration-chip').forEach(c => c.classList.remove('selected'));
+            chip.classList.add('selected');
+            qnaDuration = parseInt(chip.dataset.val);
+        });
+    });
+    document.querySelectorAll('#raceDurationOptions .duration-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            document.querySelectorAll('#raceDurationOptions .duration-chip').forEach(c => c.classList.remove('selected'));
+            chip.classList.add('selected');
+            raceDuration = parseInt(chip.dataset.val);
+        });
+    });
+
+    // ---- نظام فردي/مجموعات ----
+    function setTeamMode(isTeam) {
+        socket.emit('setTeamMode', isTeam);
+    }
+
+    function toggleRegistration(isOpen) {
+        socket.emit('toggleRegistration', isOpen);
+    }
+
+    function resetScoresOnly() { socket.emit('resetScoresOnly'); }
+    function resetAll() { socket.emit('resetAll'); }
+
+    // ---- سؤال خاص ----
+    function setQType(type) {
+        selectedQType = type;
+        document.getElementById('typeDirectBtn').classList.toggle('btn-primary', type === 'direct');
+        document.getElementById('typeChoicesBtn').classList.toggle('btn-primary', type === 'choices');
+        document.getElementById('choicesBox').style.display = type === 'choices' ? 'block' : 'none';
+    }
+    setQType('direct');
+
+    function addChoiceField() {
+        const box = document.getElementById('choicesBox');
+        const div = document.createElement('div');
+        div.className = 'choice-row';
+        div.innerHTML = '<input type="text" class="choiceInput" placeholder="خيار إضافي">';
+        box.insertBefore(div, box.querySelector('button'));
+    }
+
+    function startCustomQuestion() {
+        const text = document.getElementById('customQText').value.trim();
+        const answer = document.getElementById('customQAnswer').value.trim();
+        if (!text || !answer) { alert('يرجى تعبئة نص السؤال والإجابة الصحيحة'); return; }
+
+        let choices = [];
+        if (selectedQType === 'choices') {
+            choices = Array.from(document.querySelectorAll('.choiceInput')).map(i => i.value.trim()).filter(Boolean);
+        }
+
+        socket.emit('startQuestion', { text, type: selectedQType, choices, correctAnswer: answer, duration: qnaDuration });
+    }
+
+    function startBankQuestion(section, index) {
+        const q = questionBank[section][index];
+        socket.emit('startQuestion', { text: q.text, type: q.type, choices: q.choices || [], correctAnswer: q.correctAnswer, duration: qnaDuration });
+    }
+
+    function endRoundManually() { socket.emit('endRoundManually'); }
+
+    // ---- سباق كتابة ----
+    function startRace() {
+        const phrase = document.getElementById('racePhrase').value.trim();
+        if (!phrase) { alert('يرجى إدخال الكلمة أو الجملة'); return; }
+        socket.emit('startRace', { targetPhrase: phrase, duration: raceDuration });
+    }
+
+    // ---- سحب عشوائي ----
+    function startDraw() {
+        const keyword = document.getElementById('drawKeyword').value.trim();
+        if (!keyword) { alert('يرجى إدخال كلمة مفتاحية'); return; }
+        socket.emit('startDraw', { keyword });
+    }
+    function stopDrawCollection() { socket.emit('stopDrawCollection'); }
+    function pickDrawWinner() { socket.emit('pickDrawWinner'); }
+
+    // ---- استقبال تحديثات الحالة ----
+    socket.on('stateUpdate', (state) => {
+        currentState = state;
+        renderState();
+    });
+
+    socket.on('questionBankUpdate', (bank) => {
+        questionBank = bank;
+        renderQuestionBank();
+    });
+
+    socket.on('questionStarted', (q) => {
+        document.getElementById('qnaStatus').innerText = '🟢 جولة نشطة: ' + q.text;
+        document.getElementById('qnaStatus').classList.add('live');
+        document.getElementById('raceStatus').innerText = '🟢 السباق جارٍ: ' + q.text;
+        document.getElementById('raceStatus').classList.add('live');
+        document.getElementById('endQnaBtn').disabled = false;
+        document.getElementById('endRaceBtn').disabled = false;
+        document.getElementById('qnaCorrectList').innerHTML = '';
+        document.getElementById('raceCorrectList').innerHTML = '';
+    });
+
+    socket.on('newCorrectAnswer', (data) => {
+        const list = document.getElementById('qnaCorrectList');
+        const raceList = document.getElementById('raceCorrectList');
+        const num = list.children.length + 1;
+        const item = document.createElement('div');
+        item.className = 'item';
+        item.innerHTML = `<span><span class="num">#${num}</span> ${data.name}</span><span>${data.team || ''}</span>`;
+        list.appendChild(item.cloneNode(true));
+        raceList.appendChild(item);
+    });
+
+    socket.on('roundEnded', (data) => {
+        document.getElementById('qnaStatus').innerText = '⚪ انتهت الجولة. الإجابة الصحيحة: ' + data.correctAnswer;
+        document.getElementById('qnaStatus').classList.remove('live');
+        document.getElementById('raceStatus').innerText = '⚪ انتهى السباق. العبارة: ' + data.correctAnswer;
+        document.getElementById('raceStatus').classList.remove('live');
+        document.getElementById('endQnaBtn').disabled = true;
+        document.getElementById('endRaceBtn').disabled = true;
+    });
+
+    socket.on('drawParticipantsUpdate', (list) => {
+        document.getElementById('drawCount').innerText = list.length;
+        document.getElementById('drawList').innerHTML = list.map(n => `<span>${n}</span>`).join('');
+    });
+
+    socket.on('drawWinnerPicked', (winner) => {
+        alert('🎉 الفائز: ' + winner);
+    });
+
+    socket.on('leaderboardUpdate', (data) => {
+        if (data.teamMode) {
+            document.getElementById('teamScoreBox').style.display = 'flex';
+            document.getElementById('individualLeaderboard').style.display = 'none';
+            document.getElementById('team1Points').innerText = data.teamScores['م1'] || 0;
+            document.getElementById('team2Points').innerText = data.teamScores['م2'] || 0;
+        } else {
+            document.getElementById('teamScoreBox').style.display = 'none';
+            const box = document.getElementById('individualLeaderboard');
+            box.style.display = 'block';
+            box.innerHTML = data.scores.map((p, i) => `
+                <div class="leaderboard-item">
+                    <span><span class="rank">${i+1}.</span> ${p.name}</span>
+                    <span class="pts">${p.points}</span>
+                </div>
+            `).join('') || '<p style="color:var(--text-dim); font-size:13px;">لا توجد نقاط بعد</p>';
+        }
+    });
+
+    function renderState() {
+        if (!currentState) return;
+
+        document.getElementById('modeIndividualBtn').classList.toggle('btn-primary', !currentState.teamMode);
+        document.getElementById('modeTeamBtn').classList.toggle('btn-primary', currentState.teamMode);
+        document.getElementById('teamRegistrationBox').style.display = currentState.teamMode ? 'block' : 'none';
+
+        document.getElementById('regStatus').innerText = currentState.registrationOpen ? '🟢 التسجيل مفتوح - بانتظار م1/م2' : '🔴 التسجيل مغلق';
+        document.getElementById('regStatus').classList.toggle('live', currentState.registrationOpen);
+
+        document.getElementById('team1Count').innerText = currentState.teams['م1'].length;
+        document.getElementById('team2Count').innerText = currentState.teams['م2'].length;
+        document.getElementById('team1List').innerHTML = currentState.teams['م1'].map(n => `<span>${n}</span>`).join('');
+        document.getElementById('team2List').innerHTML = currentState.teams['م2'].map(n => `<span>${n}</span>`).join('');
+    }
+
+    function renderQuestionBank() {
+        const select = document.getElementById('bankSectionSelect');
+        select.innerHTML = Object.keys(questionBank).map(sec => `<option value="${sec}">${sec}</option>`).join('');
+        select.onchange = renderBankQuestionsList;
+        renderBankQuestionsList();
+    }
+
+    function renderBankQuestionsList() {
+        const section = document.getElementById('bankSectionSelect').value;
+        const list = document.getElementById('bankQuestionsList');
+        if (!section || !questionBank[section]) { list.innerHTML = ''; return; }
+        list.innerHTML = questionBank[section].map((q, i) => `
+            <div class="bank-question-item">
+                <span>${q.text}</span>
+                <button class="btn btn-primary" onclick="startBankQuestion('${section}', ${i})">بدء</button>
+            </div>
+        `).join('');
+    }
+</script>
+</body>
+</html>
