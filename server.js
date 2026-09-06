@@ -17,42 +17,70 @@ const TARGET_USERNAME = "a_7_m_d2";
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+// ==================== بنك الأسئلة الثابتة (من الكود فقط) ====================
+// كل قسم له نوع واحد ثابت: 'direct' (مباشر) أو 'choices' (خيارات)
+let questionBank = {
+    "عام": {
+        type: "direct",
+        questions: [
+            { text: "من هو مصمم هذه الفعالية؟", correctAnswer: "جمال كوريني" }
+        ]
+    },
+    "إسلاميات": {
+        type: "direct",
+        questions: [
+            { text: "ما هي السورة التي تُسمى بـ \"قلب القرآن\"؟", correctAnswer: "يس" },
+            { text: "من هو أول الخلفاء الراشدين؟", correctAnswer: "أبو بكر الصديق" },
+            { text: "كم عدد سور القرآن الكريم؟", correctAnswer: "114" },
+            { text: "ما هي الغزوة التي سُميت بـ \"يوم الفرقان\"؟", correctAnswer: "غزوة بدر" },
+            { text: "من هو النبي الذي ابتلعه الحوت؟", correctAnswer: "يونس" },
+            { text: "في أي شهر نزل القرآن الكريم؟", correctAnswer: "رمضان" },
+            { text: "ما هي أطول سورة في القرآن الكريم؟", correctAnswer: "البقرة" },
+            { text: "من هي المرأة التي لُقبت بـ \"ذات النطاقين\"؟", correctAnswer: "أسماء بنت أبي بكر" },
+            { text: "ما هو أول مسجد بُني في الإسلام؟", correctAnswer: "مسجد قباء" },
+            { text: "من هو الصحابي الجليل الذي لُقب بـ \"سيف الله المسلول\"؟", correctAnswer: "خالد بن الوليد" }
+        ]
+    }
+};
+
+// ==================== الأقسام الخاصة (يديرها الأدمن، تُحفظ في الذاكرة) ====================
+let customSections = {};
+let customSectionIdCounter = 1;
+let customQuestionIdCounter = 1;
+
 // ==================== حالة النظام العامة ====================
 let state = {
-    mode: null,              // 'idle' | 'qna' | 'race' | 'draw' | null
-    teamMode: false,         // false = فردي, true = مجموعات
-    registrationOpen: false, // فتح تسجيل المجموعات (م1/م2) قبل بدء الجولة
-    teams: { م1: [], م2: [] }, // أعضاء كل مجموعة (فردي وأسماء)
-    currentQuestion: null,   // { text, type: 'direct'|'choices', choices: [], correctAnswer, duration }
-    roundActive: false,      // هل الجولة قيد التشغيل فعلياً (استقبال إجابات)
-    correctAnswers: [],      // [{ name, team }] بترتيب وصولهم
+    teamMode: false,
+    registrationOpen: false,
+    teams: { م1: [], م2: [] },
+
+    drawMode: false,
+    drawKeyword: null,
+    drawParticipants: [],
+
+    competitionActive: false,
+    competitionSource: null,
+    competitionSectionName: null,
+    competitionType: null,
+    competitionDuration: null,
+    competitionTotalQuestions: null,
+    competitionAskedCount: 0,
+    competitionRemainingIndexes: [],
+    currentQuestion: null,
+    currentCorrectAnswer: null,
+    roundActive: false,
     roundStartTime: null,
-    scores: {},              // { playerName: points } وضع فردي
-    teamScores: { م1: 0, م2: 0 }, // وضع مجموعات
-    drawParticipants: [],    // أسماء المشاركين بالسحب العشوائي
-    drawKeyword: null
+    correctAnswersThisQuestion: [],
+    competitionCorrectCounts: {},
+    competitionFinished: false,
+
+    scores: {},
+    teamScores: { م1: 0, م2: 0 }
 };
 
-// بنك الأسئلة الثابتة (أقسام) - سيُملأ لاحقاً من ملفات Word
-let questionBank = {
-    "عام": [
-        { text: "من هو مصمم هذه الفعالية؟", type: "direct", correctAnswer: "جمال كوريني" }
-    ],
-    "إسلاميات": [
-        { text: "ما هي السورة التي تُسمى بـ \"قلب القرآن\"؟", type: "direct", correctAnswer: "يس" },
-        { text: "من هو أول الخلفاء الراشدين؟", type: "direct", correctAnswer: "أبو بكر الصديق" },
-        { text: "كم عدد سور القرآن الكريم؟", type: "direct", correctAnswer: "114" },
-        { text: "ما هي الغزوة التي سُميت بـ \"يوم الفرقان\"؟", type: "direct", correctAnswer: "غزوة بدر" },
-        { text: "من هو النبي الذي ابتلعه الحوت؟", type: "direct", correctAnswer: "يونس" },
-        { text: "في أي شهر نزل القرآن الكريم؟", type: "direct", correctAnswer: "رمضان" },
-        { text: "ما هي أطول سورة في القرآن الكريم؟", type: "direct", correctAnswer: "البقرة" },
-        { text: "من هي المرأة التي لُقبت بـ \"ذات النطاقين\"؟", type: "direct", correctAnswer: "أسماء بنت أبي بكر" },
-        { text: "ما هو أول مسجد بُني في الإسلام؟", type: "direct", correctAnswer: "مسجد قباء" },
-        { text: "من هو الصحابي الجليل الذي لُقب بـ \"سيف الله المسلول\"؟", type: "direct", correctAnswer: "خالد بن الوليد" }
-    ]
-};
+let questionTimer = null;
 
-// ==================== أدوات مساعدة ====================
+// ==================== أدوات مساعدة: مطابقة الإجابات ====================
 function normalizeAnswer(str) {
     return (str || '')
         .trim()
@@ -60,14 +88,12 @@ function normalizeAnswer(str) {
         .replace(/[أإآ]/g, 'ا')
         .replace(/ى/g, 'ي')
         .replace(/ة/g, 'ه')
-        .replace(/[\u064B-\u065F]/g, '') // إزالة التشكيل
-        .replace(/[.,،؟!"']/g, '')       // إزالة علامات الترقيم
+        .replace(/[\u064B-\u065F]/g, '')
+        .replace(/[.,،؟!"']/g, '')
         .replace(/\s+/g, ' ')
         .trim();
 }
 
-// عبارات وكلمات لاحقة/زائدة شائعة تُحذف من الإجابة الصحيحة المرجعية
-// حتى لا يُشترط على المشاهد كتابتها ليُحتسب جوابه صحيحاً
 const TRAILING_PHRASES = [
     'رضي الله عنه وعنها', 'رضي الله عنهما', 'رضي الله عنهم',
     'رضي الله عنه', 'رضي الله عنها',
@@ -77,23 +103,15 @@ const TRAILING_WORDS = ['سورة', 'سوره', 'غزوة', 'غزوه'];
 
 function extractCoreAnswer(rawAnswer) {
     let core = normalizeAnswer(rawAnswer);
-
-    // إزالة عبارات الترضي/الترحّم أينما وردت
     for (const phrase of TRAILING_PHRASES) {
         core = core.replace(normalizeAnswer(phrase), '').trim();
     }
-
-    // إزالة كلمة وصفية زائدة إذا جاءت في أول أو آخر الإجابة (مثل "114 سورة" أو "سورة البقرة")
     const words = core.split(' ').filter(Boolean);
     const filtered = words.filter(w => !TRAILING_WORDS.includes(w));
     core = filtered.length > 0 ? filtered.join(' ') : core;
-
     return core.trim();
 }
 
-// تحقق إن كانت إجابة المشاهد تطابق "جوهر" الإجابة الصحيحة
-// تقبل: التطابق التام، أو احتواء المشاهد لكل كلمات الجوهر (بأي ترتيب متتالٍ)،
-// أو أن يكون الجوهر يبدأ بنفس كلمات إجابة المشاهد (مثال: "ابو بكر" ضمن "ابو بكر الصديق")
 function isAnswerCorrect(userComment, correctRawAnswer) {
     const userAnswer = normalizeAnswer(userComment);
     if (!userAnswer) return false;
@@ -102,12 +120,8 @@ function isAnswerCorrect(userComment, correctRawAnswer) {
     const fullCorrect = normalizeAnswer(correctRawAnswer);
 
     if (userAnswer === fullCorrect || userAnswer === core) return true;
-
-    // المشاهد كتب الجوهر كاملاً ضمن جملة أطول (مثال: "الجواب ابو بكر الصديق")
     if (core.length >= 2 && userAnswer.includes(core)) return true;
 
-    // المشاهد كتب جزءاً كافياً من الجوهر (مثال: "ابو بكر" بدل "ابو بكر الصديق")
-    // يُشترط أن يطابق بداية الجوهر بكلمات كاملة متتالية، وألا يكون قصيراً جداً (حرف أو حرفين)
     const coreWords = core.split(' ').filter(Boolean);
     const userWords = userAnswer.split(' ').filter(Boolean);
     if (coreWords.length > 1 && userWords.length >= 1) {
@@ -116,12 +130,34 @@ function isAnswerCorrect(userComment, correctRawAnswer) {
             return true;
         }
     }
-
     return false;
 }
 
+function isChoiceCorrect(userComment, choices, correctIndex) {
+    const userAnswer = normalizeAnswer(userComment);
+    if (!userAnswer) return false;
+
+    const numMatch = userAnswer.match(/^([1-4])$/);
+    if (numMatch) {
+        return (parseInt(numMatch[1], 10) - 1) === correctIndex;
+    }
+
+    return isAnswerCorrect(userComment, choices[correctIndex]);
+}
+
+// ==================== بث الحالة ====================
 function broadcastState() {
     io.emit('stateUpdate', state);
+}
+
+function broadcastSectionsLists() {
+    const bankSectionNames = Object.keys(questionBank).map(name => ({
+        name, type: questionBank[name].type, count: questionBank[name].questions.length
+    }));
+    io.emit('sectionsUpdate', {
+        bankSections: bankSectionNames,
+        customSections: customSections
+    });
 }
 
 function broadcastLeaderboard() {
@@ -149,14 +185,181 @@ function getPlayerTeam(name) {
     return null;
 }
 
+function getSectionQuestions(source, sectionName) {
+    if (source === 'bank') {
+        return questionBank[sectionName] ? questionBank[sectionName].questions : [];
+    } else {
+        return customSections[sectionName] ? customSections[sectionName].questions : [];
+    }
+}
+
+function getSectionType(source, sectionName) {
+    if (source === 'bank') {
+        return questionBank[sectionName] ? questionBank[sectionName].type : null;
+    } else {
+        return customSections[sectionName] ? customSections[sectionName].type : null;
+    }
+}
+
+function shuffleArray(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+
+// ==================== منطق المسابقة (أسئلة وأجوبة) ====================
+function startCompetition(source, sectionName, duration, totalQuestions) {
+    const questions = getSectionQuestions(source, sectionName);
+    const type = getSectionType(source, sectionName);
+    if (!questions || questions.length === 0) return false;
+
+    const actualTotal = Math.min(totalQuestions, questions.length);
+    const indexes = shuffleArray(questions.map((_, i) => i)).slice(0, actualTotal);
+
+    state.competitionActive = true;
+    state.competitionSource = source;
+    state.competitionSectionName = sectionName;
+    state.competitionType = type;
+    state.competitionDuration = duration;
+    state.competitionTotalQuestions = actualTotal;
+    state.competitionAskedCount = 0;
+    state.competitionRemainingIndexes = indexes;
+    state.competitionCorrectCounts = {};
+    state.competitionFinished = false;
+    state.currentQuestion = null;
+    state.roundActive = false;
+
+    broadcastState();
+    askNextQuestion();
+    return true;
+}
+
+function askNextQuestion() {
+    if (questionTimer) { clearTimeout(questionTimer); questionTimer = null; }
+
+    if (state.competitionRemainingIndexes.length === 0) {
+        finishCompetition();
+        return;
+    }
+
+    const questions = getSectionQuestions(state.competitionSource, state.competitionSectionName);
+    const idx = state.competitionRemainingIndexes.shift();
+    const q = questions[idx];
+
+    state.competitionAskedCount += 1;
+    state.correctAnswersThisQuestion = [];
+    state.roundStartTime = Date.now();
+    state.roundActive = true;
+
+    if (state.competitionType === 'choices') {
+        state.currentQuestion = { text: q.text, choices: q.choices };
+        state.currentCorrectAnswer = { choices: q.choices, correctIndex: q.correctIndex };
+    } else {
+        state.currentQuestion = { text: q.text };
+        state.currentCorrectAnswer = { text: q.correctAnswer };
+    }
+
+    broadcastState();
+
+    questionTimer = setTimeout(() => {
+        state.roundActive = false;
+        broadcastState();
+        setTimeout(askNextQuestion, 2000);
+    }, state.competitionDuration * 1000);
+}
+
+function finishCompetition() {
+    state.competitionActive = false;
+    state.competitionFinished = true;
+    state.roundActive = false;
+    state.currentQuestion = null;
+    if (questionTimer) { clearTimeout(questionTimer); questionTimer = null; }
+    broadcastState();
+    broadcastLeaderboard();
+}
+
+function stopCompetitionManually() {
+    state.competitionActive = false;
+    state.competitionFinished = false;
+    state.roundActive = false;
+    state.currentQuestion = null;
+    state.competitionSource = null;
+    state.competitionSectionName = null;
+    state.competitionRemainingIndexes = [];
+    if (questionTimer) { clearTimeout(questionTimer); questionTimer = null; }
+    broadcastState();
+}
+
 // ==================== منطق الاتصال بلوحة التحكم (Socket.io) ====================
 io.on('connection', (socket) => {
     console.log('📶 لوحة تحكم جديدة متصلة');
     socket.emit('stateUpdate', state);
-    socket.emit('questionBankUpdate', questionBank);
+    broadcastSectionsLists();
     broadcastLeaderboard();
 
-    // ---- التسجيل في المجموعات ----
+    socket.on('createCustomSection', (payload) => {
+        const name = (payload.name || '').trim();
+        if (!name || customSections[name]) return;
+        customSections[name] = {
+            id: customSectionIdCounter++,
+            type: payload.type === 'choices' ? 'choices' : 'direct',
+            questions: []
+        };
+        broadcastSectionsLists();
+    });
+
+    socket.on('deleteCustomSection', (sectionName) => {
+        delete customSections[sectionName];
+        broadcastSectionsLists();
+    });
+
+    socket.on('addCustomQuestion', (payload) => {
+        const section = customSections[payload.sectionName];
+        if (!section) return;
+
+        if (section.type === 'direct') {
+            section.questions.push({
+                id: customQuestionIdCounter++,
+                text: payload.text,
+                correctAnswer: payload.correctAnswer
+            });
+        } else {
+            section.questions.push({
+                id: customQuestionIdCounter++,
+                text: payload.text,
+                choices: payload.choices,
+                correctIndex: payload.correctIndex
+            });
+        }
+        broadcastSectionsLists();
+    });
+
+    socket.on('editCustomQuestion', (payload) => {
+        const section = customSections[payload.sectionName];
+        if (!section) return;
+        const q = section.questions.find(q => q.id === payload.questionId);
+        if (!q) return;
+
+        q.text = payload.text;
+        if (section.type === 'direct') {
+            q.correctAnswer = payload.correctAnswer;
+        } else {
+            q.choices = payload.choices;
+            q.correctIndex = payload.correctIndex;
+        }
+        broadcastSectionsLists();
+    });
+
+    socket.on('deleteCustomQuestion', (payload) => {
+        const section = customSections[payload.sectionName];
+        if (!section) return;
+        section.questions = section.questions.filter(q => q.id !== payload.questionId);
+        broadcastSectionsLists();
+    });
+
     socket.on('toggleRegistration', (isOpen) => {
         state.registrationOpen = isOpen;
         if (isOpen) {
@@ -170,86 +373,31 @@ io.on('connection', (socket) => {
         broadcastState();
     });
 
-    // ---- بدء سؤال (من بنك الأسئلة أو سؤال خاص) ----
-    socket.on('startQuestion', (payload) => {
-        // payload: { text, type, choices, correctAnswer, duration }
-        state.currentQuestion = {
-            text: payload.text,
-            type: payload.type || 'direct',
-            choices: payload.choices || [],
-            correctAnswer: payload.correctAnswer,
-            duration: payload.duration || 20
-        };
-        state.roundActive = true;
-        state.correctAnswers = [];
-        state.roundStartTime = Date.now();
-        state.registrationOpen = false; // إقفال تسجيل المجموعات بمجرد بدء أي جولة
-        state.mode = 'qna';
-
-        io.emit('questionStarted', state.currentQuestion);
-        broadcastState();
-
-        // إنهاء الجولة تلقائياً بعد المدة المحددة
-        setTimeout(() => {
-            if (state.roundActive && state.currentQuestion && state.roundStartTime) {
-                endRound();
-            }
-        }, state.currentQuestion.duration * 1000);
+    socket.on('startCompetition', (payload) => {
+        startCompetition(payload.source, payload.sectionName, payload.duration, payload.totalQuestions);
     });
 
-    socket.on('endRoundManually', () => {
-        endRound();
+    socket.on('stopCompetition', () => {
+        stopCompetitionManually();
     });
 
-    function endRound() {
-        state.roundActive = false;
-        io.emit('roundEnded', {
-            correctAnswer: state.currentQuestion ? state.currentQuestion.correctAnswer : '',
-            correctAnswers: state.correctAnswers,
-            teamMode: state.teamMode,
-            teamScores: state.teamScores
-        });
+    socket.on('dismissFinalResults', () => {
+        state.competitionFinished = false;
+        state.competitionCorrectCounts = {};
         broadcastState();
-        broadcastLeaderboard();
-    }
-
-    // ---- سباق الكتابة ----
-    socket.on('startRace', (payload) => {
-        // payload: { targetPhrase, duration }
-        state.currentQuestion = {
-            text: `اكتب: ${payload.targetPhrase}`,
-            type: 'race',
-            correctAnswer: payload.targetPhrase,
-            duration: payload.duration || 20
-        };
-        state.roundActive = true;
-        state.correctAnswers = [];
-        state.roundStartTime = Date.now();
-        state.registrationOpen = false;
-        state.mode = 'race';
-
-        io.emit('questionStarted', state.currentQuestion);
-        broadcastState();
-
-        setTimeout(() => {
-            if (state.roundActive && state.currentQuestion && state.roundStartTime) {
-                endRound();
-            }
-        }, state.currentQuestion.duration * 1000);
     });
 
-    // ---- السحب العشوائي ----
     socket.on('startDraw', (payload) => {
-        // payload: { keyword }
         state.drawKeyword = payload.keyword;
         state.drawParticipants = [];
-        state.mode = 'draw';
-        state.registrationOpen = false;
+        state.drawMode = true;
         broadcastState();
     });
 
     socket.on('stopDrawCollection', () => {
+        state.drawMode = false;
         io.emit('drawCollectionStopped', state.drawParticipants);
+        broadcastState();
     });
 
     socket.on('pickDrawWinner', () => {
@@ -260,29 +408,40 @@ io.on('connection', (socket) => {
         broadcastLeaderboard();
     });
 
-    // ---- إعادة تعيين كاملة ----
-    socket.on('resetAll', () => {
-        state = {
-            mode: null,
-            teamMode: false,
-            registrationOpen: false,
-            teams: { م1: [], م2: [] },
-            currentQuestion: null,
-            roundActive: false,
-            correctAnswers: [],
-            roundStartTime: null,
-            scores: {},
-            teamScores: { م1: 0, م2: 0 },
-            drawParticipants: [],
-            drawKeyword: null
-        };
-        broadcastState();
-        broadcastLeaderboard();
-    });
-
     socket.on('resetScoresOnly', () => {
         state.scores = {};
         state.teamScores = { م1: 0, م2: 0 };
+        broadcastLeaderboard();
+    });
+
+    socket.on('resetAll', () => {
+        if (questionTimer) { clearTimeout(questionTimer); questionTimer = null; }
+        state = {
+            teamMode: false,
+            registrationOpen: false,
+            teams: { م1: [], م2: [] },
+            drawMode: false,
+            drawKeyword: null,
+            drawParticipants: [],
+            competitionActive: false,
+            competitionSource: null,
+            competitionSectionName: null,
+            competitionType: null,
+            competitionDuration: null,
+            competitionTotalQuestions: null,
+            competitionAskedCount: 0,
+            competitionRemainingIndexes: [],
+            currentQuestion: null,
+            currentCorrectAnswer: null,
+            roundActive: false,
+            roundStartTime: null,
+            correctAnswersThisQuestion: [],
+            competitionCorrectCounts: {},
+            competitionFinished: false,
+            scores: {},
+            teamScores: { م1: 0, م2: 0 }
+        };
+        broadcastState();
         broadcastLeaderboard();
     });
 });
@@ -305,23 +464,21 @@ tiktokConnection.on('chat', (data) => {
     const comment = (data.comment || data.text || data.content || '').trim();
     if (!comment) return;
 
-    // ---- تسجيل المجموعات (م1 / م2) ----
     if (state.registrationOpen) {
         const clean = comment.replace(/\s+/g, '');
         if (clean === 'م1' && !state.teams["م1"].includes(nickname) && !state.teams["م2"].includes(nickname)) {
             state.teams["م1"].push(nickname);
-            io.emit('stateUpdate', state);
+            broadcastState();
             return;
         }
         if (clean === 'م2' && !state.teams["م2"].includes(nickname) && !state.teams["م1"].includes(nickname)) {
             state.teams["م2"].push(nickname);
-            io.emit('stateUpdate', state);
+            broadcastState();
             return;
         }
     }
 
-    // ---- السحب العشوائي: جمع المشاركين بالكلمة المفتاحية ----
-    if (state.mode === 'draw' && state.drawKeyword) {
+    if (state.drawMode && state.drawKeyword) {
         if (comment.includes(state.drawKeyword) && !state.drawParticipants.includes(nickname)) {
             state.drawParticipants.push(nickname);
             io.emit('drawParticipantsUpdate', state.drawParticipants);
@@ -329,18 +486,23 @@ tiktokConnection.on('chat', (data) => {
         return;
     }
 
-    // ---- أسئلة وأجوبة / سباق كتابة: فحص الإجابات ----
-    if (state.roundActive && state.currentQuestion) {
-        // في وضع المجموعات، يجب أن يكون المستخدم منضماً لفريق
+    if (state.roundActive && state.currentQuestion && state.currentCorrectAnswer) {
         const team = getPlayerTeam(nickname);
-        if (state.teamMode && !team) return; // تجاهل من ليس ضمن أي فريق
+        if (state.teamMode && !team) return;
 
-        // منع الشخص من تسجيل إجابة صحيحة أكثر من مرة بنفس الجولة
-        const alreadyAnswered = state.correctAnswers.some(a => a.name === nickname);
+        const alreadyAnswered = state.correctAnswersThisQuestion.includes(nickname);
         if (alreadyAnswered) return;
 
-        if (isAnswerCorrect(comment, state.currentQuestion.correctAnswer)) {
-            state.correctAnswers.push({ name: nickname, team: team || null, time: Date.now() });
+        let correct = false;
+        if (state.competitionType === 'choices') {
+            correct = isChoiceCorrect(comment, state.currentCorrectAnswer.choices, state.currentCorrectAnswer.correctIndex);
+        } else {
+            correct = isAnswerCorrect(comment, state.currentCorrectAnswer.text);
+        }
+
+        if (correct) {
+            state.correctAnswersThisQuestion.push(nickname);
+            state.competitionCorrectCounts[nickname] = (state.competitionCorrectCounts[nickname] || 0) + 1;
             addPoints(nickname, team, 1);
             io.emit('newCorrectAnswer', { name: nickname, team: team || null });
             broadcastLeaderboard();
