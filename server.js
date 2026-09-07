@@ -3,6 +3,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
+const { MongoClient } = require('mongodb');
 
 const app = express();
 const server = http.createServer(app);
@@ -16,6 +17,58 @@ const io = new Server(server, {
 const TARGET_USERNAME = "a_7_m_d2";
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+// ==================== الاتصال بقاعدة بيانات MongoDB (تخزين دائم) ====================
+const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://falconabd91_db_user:I7TBT8VKdM5Zr7JV@cluster0.cvlkw88.mongodb.net/?appName=Cluster0";
+const mongoClient = new MongoClient(MONGO_URI);
+let db = null;
+let customSectionsCollection = null;
+let dbReady = false;
+
+async function connectDB() {
+    try {
+        await mongoClient.connect();
+        db = mongoClient.db("tiktok_quiz");
+        customSectionsCollection = db.collection("customSections");
+        console.log('✅ متصل بقاعدة بيانات MongoDB بنجاح');
+        await loadCustomSectionsFromDB();
+        dbReady = true;
+        broadcastSectionsLists(); // تحديث أي لوحات تحكم متصلة مسبقاً بالبيانات المحمّلة فعلياً
+    } catch (err) {
+        console.error('❌ فشل الاتصال بقاعدة البيانات:', err.toString());
+    }
+}
+
+// تحميل الأقسام الخاصة المحفوظة من قاعدة البيانات عند بدء تشغيل السيرفر
+async function loadCustomSectionsFromDB() {
+    if (!customSectionsCollection) return;
+    const doc = await customSectionsCollection.findOne({ _id: "sections" });
+    if (doc && doc.data) {
+        customSections = doc.data;
+        // ضبط عدادات المعرّفات لتفادي تكرار id عند إضافة أقسام/أسئلة جديدة
+        Object.values(customSections).forEach(sec => {
+            if (sec.id >= customSectionIdCounter) customSectionIdCounter = sec.id + 1;
+            (sec.questions || []).forEach(q => {
+                if (q.id >= customQuestionIdCounter) customQuestionIdCounter = q.id + 1;
+            });
+        });
+        console.log(`📂 تم تحميل ${Object.keys(customSections).length} قسم خاص من قاعدة البيانات`);
+    }
+}
+
+// حفظ الأقسام الخاصة بالكامل في قاعدة البيانات (يُستدعى بعد أي تعديل)
+async function saveCustomSectionsToDB() {
+    if (!customSectionsCollection) return;
+    try {
+        await customSectionsCollection.updateOne(
+            { _id: "sections" },
+            { $set: { data: customSections } },
+            { upsert: true }
+        );
+    } catch (err) {
+        console.error('❌ خطأ أثناء حفظ الأقسام الخاصة:', err.toString());
+    }
+}
 
 // ==================== بنك الأسئلة الثابتة (من الكود فقط) ====================
 // كل قسم له نوع واحد ثابت: 'direct' (مباشر) أو 'choices' (خيارات)
@@ -309,11 +362,13 @@ io.on('connection', (socket) => {
             questions: []
         };
         broadcastSectionsLists();
+        saveCustomSectionsToDB();
     });
 
     socket.on('deleteCustomSection', (sectionName) => {
         delete customSections[sectionName];
         broadcastSectionsLists();
+        saveCustomSectionsToDB();
     });
 
     socket.on('addCustomQuestion', (payload) => {
@@ -335,6 +390,7 @@ io.on('connection', (socket) => {
             });
         }
         broadcastSectionsLists();
+        saveCustomSectionsToDB();
     });
 
     socket.on('editCustomQuestion', (payload) => {
@@ -351,6 +407,7 @@ io.on('connection', (socket) => {
             q.correctIndex = payload.correctIndex;
         }
         broadcastSectionsLists();
+        saveCustomSectionsToDB();
     });
 
     socket.on('deleteCustomQuestion', (payload) => {
@@ -358,6 +415,7 @@ io.on('connection', (socket) => {
         if (!section) return;
         section.questions = section.questions.filter(q => q.id !== payload.questionId);
         broadcastSectionsLists();
+        saveCustomSectionsToDB();
     });
 
     socket.on('toggleRegistration', (isOpen) => {
@@ -529,5 +587,6 @@ function runServer() {
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`🚀 السيرفر يعمل على المنفذ: ${PORT}`);
+    connectDB();
     runServer();
 });
