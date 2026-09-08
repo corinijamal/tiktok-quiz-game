@@ -23,6 +23,7 @@ const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://falconabd91_db_user:I7
 const mongoClient = new MongoClient(MONGO_URI);
 let db = null;
 let customSectionsCollection = null;
+let leaderboardCollection = null;
 let dbReady = false;
 
 async function connectDB() {
@@ -30,10 +31,13 @@ async function connectDB() {
         await mongoClient.connect();
         db = mongoClient.db("tiktok_quiz");
         customSectionsCollection = db.collection("customSections");
+        leaderboardCollection = db.collection("leaderboard");
         console.log('✅ متصل بقاعدة بيانات MongoDB بنجاح');
         await loadCustomSectionsFromDB();
+        await loadLeaderboardFromDB();
         dbReady = true;
-        broadcastSectionsLists(); // تحديث أي لوحات تحكم متصلة مسبقاً بالبيانات المحمّلة فعلياً
+        broadcastSectionsLists();
+        broadcastHistoricalLeaderboard();
     } catch (err) {
         console.error('❌ فشل الاتصال بقاعدة البيانات:', err.toString());
     }
@@ -68,6 +72,82 @@ async function saveCustomSectionsToDB() {
     } catch (err) {
         console.error('❌ خطأ أثناء حفظ الأقسام الخاصة:', err.toString());
     }
+}
+
+// ==================== السجل التاريخي الدائم لقائمة المتصدرين ====================
+// شكل كل مستند: { _id: اسم اللاعب, correctAnswers: عدد, gold: عدد, silver: عدد, bronze: عدد }
+let historicalLeaderboard = {}; // نسخة في الذاكرة للقراءة السريعة، مرآة لقاعدة البيانات
+
+async function loadLeaderboardFromDB() {
+    if (!leaderboardCollection) return;
+    const docs = await leaderboardCollection.find({}).toArray();
+    historicalLeaderboard = {};
+    docs.forEach(doc => {
+        historicalLeaderboard[doc._id] = {
+            correctAnswers: doc.correctAnswers || 0,
+            gold: doc.gold || 0,
+            silver: doc.silver || 0,
+            bronze: doc.bronze || 0
+        };
+    });
+    console.log(`🏆 تم تحميل سجل ${docs.length} لاعب من قائمة المتصدرين التاريخية`);
+}
+
+async function addHistoricalCorrectAnswer(name) {
+    if (!historicalLeaderboard[name]) {
+        historicalLeaderboard[name] = { correctAnswers: 0, gold: 0, silver: 0, bronze: 0 };
+    }
+    historicalLeaderboard[name].correctAnswers += 1;
+    if (leaderboardCollection) {
+        try {
+            await leaderboardCollection.updateOne(
+                { _id: name },
+                { $inc: { correctAnswers: 1 }, $setOnInsert: { gold: 0, silver: 0, bronze: 0 } },
+                { upsert: true }
+            );
+        } catch (err) {
+            console.error('❌ خطأ أثناء حفظ إجابة صحيحة بالسجل التاريخي:', err.toString());
+        }
+    }
+}
+
+async function addHistoricalMedal(name, medalType) {
+    if (!historicalLeaderboard[name]) {
+        historicalLeaderboard[name] = { correctAnswers: 0, gold: 0, silver: 0, bronze: 0 };
+    }
+    historicalLeaderboard[name][medalType] += 1;
+    if (leaderboardCollection) {
+        try {
+            const incField = {};
+            incField[medalType] = 1;
+            await leaderboardCollection.updateOne(
+                { _id: name },
+                { $inc: incField, $setOnInsert: { correctAnswers: 0 } },
+                { upsert: true }
+            );
+        } catch (err) {
+            console.error('❌ خطأ أثناء حفظ ميدالية بالسجل التاريخي:', err.toString());
+        }
+    }
+}
+
+async function clearHistoricalLeaderboard() {
+    historicalLeaderboard = {};
+    if (leaderboardCollection) {
+        try {
+            await leaderboardCollection.deleteMany({});
+        } catch (err) {
+            console.error('❌ خطأ أثناء مسح السجل التاريخي:', err.toString());
+        }
+    }
+    broadcastHistoricalLeaderboard();
+}
+
+function broadcastHistoricalLeaderboard() {
+    const list = Object.entries(historicalLeaderboard)
+        .map(([name, data]) => ({ name, ...data }))
+        .sort((a, b) => (b.gold - a.gold) || (b.silver - a.silver) || (b.bronze - a.bronze) || (b.correctAnswers - a.correctAnswers));
+    io.emit('historicalLeaderboardUpdate', list);
 }
 
 // ==================== بنك الأسئلة الثابتة (من الكود فقط) ====================
@@ -238,39 +318,46 @@ let questionBank = {
     }
 };
 
-// ==================== الأقسام الخاصة (يديرها الأدمن، تُحفظ في الذاكرة) ====================
+// ==================== الأقسام الخاصة (يديرها الأدمن، تُحفظ في الذاكرة + قاعدة البيانات) ====================
 let customSections = {};
 let customSectionIdCounter = 1;
 let customQuestionIdCounter = 1;
 
 // ==================== حالة النظام العامة ====================
 let state = {
+    // نظام المسابقة: 'manual' (يدوي) أو 'auto' (تلقائي)
+    competitionMode: 'auto',
+
+    // المجموعات
     teamMode: false,
     registrationOpen: false,
     teams: { م1: [], م2: [] },
 
+    // السحب العشوائي
     drawMode: false,
     drawKeyword: null,
     drawParticipants: [],
 
+    // إعداد المسابقة الحالية
     competitionActive: false,
-    competitionSource: null,
-    competitionSectionName: null,
-    competitionType: null,
+    competitionSelectedSections: [], // [{ source: 'bank'|'custom', name: '...' }]
     competitionDuration: null,
     competitionTotalQuestions: null,
     competitionAskedCount: 0,
-    competitionRemainingIndexes: [],
-    currentQuestion: null,
-    currentCorrectAnswer: null,
+    competitionQueue: [], // [{ source, sectionName, questionIndex }] مخلوطة بلا تكرار حتى انتهاء العدد المطلوب
+
+    // السؤال الحالي
+    currentQuestion: null,       // { text, type, choices? }
+    currentCorrectAnswer: null,  // { text } أو { choices, correctIndex }
     roundActive: false,
     roundStartTime: null,
-    correctAnswersThisQuestion: [],
-    competitionCorrectCounts: {},
-    competitionFinished: false,
+    waitingForNext: false,       // بعد انتهاء وقت السؤال، بانتظار "التالي" (يدوي) أو الانتقال التلقائي
 
-    scores: {},
-    teamScores: { م1: 0, م2: 0 }
+    // نتائج المسابقة الحالية فقط (تُصفَّر مع كل مسابقة جديدة)
+    correctAnswersThisQuestion: [], // [{ name, team, time }] بترتيب الوصول لهذا السؤال فقط
+    competitionResults: {},         // { name: { count, team, firstAnswerTime, totalAnswerSpeedSum } } لكل المسابقة الحالية
+    competitionFinished: false,
+    competitionFinalRanking: []     // تُحسب عند انتهاء المسابقة: [{ name, count, team, medal }]
 };
 
 let questionTimer = null;
@@ -355,23 +442,24 @@ function broadcastSectionsLists() {
     });
 }
 
-function broadcastLeaderboard() {
+// ترتيب المتسابقين الحاليين أثناء المسابقة (تُعرض تحت السؤال أثناء اللعب)
+function getCurrentCompetitionRanking() {
     if (state.teamMode) {
-        io.emit('leaderboardUpdate', { teamMode: true, teamScores: state.teamScores });
+        const teamCounts = { م1: 0, م2: 0 };
+        Object.values(state.competitionResults).forEach(r => {
+            if (r.team) teamCounts[r.team] += r.count;
+        });
+        return { teamMode: true, teamCounts };
     } else {
-        const sorted = Object.entries(state.scores)
-            .sort((a, b) => b[1] - a[1])
-            .map(([name, points]) => ({ name, points }));
-        io.emit('leaderboardUpdate', { teamMode: false, scores: sorted });
+        const sorted = Object.entries(state.competitionResults)
+            .map(([name, r]) => ({ name, count: r.count, firstAnswerTime: r.firstAnswerTime }))
+            .sort((a, b) => b.count - a.count || a.firstAnswerTime - b.firstAnswerTime);
+        return { teamMode: false, ranking: sorted };
     }
 }
 
-function addPoints(name, team, amount) {
-    if (state.teamMode && team) {
-        state.teamScores[team] = (state.teamScores[team] || 0) + amount;
-    } else if (!state.teamMode) {
-        state.scores[name] = (state.scores[name] || 0) + amount;
-    }
+function broadcastCurrentRanking() {
+    io.emit('currentRankingUpdate', getCurrentCompetitionRanking());
 }
 
 function getPlayerTeam(name) {
@@ -406,26 +494,38 @@ function shuffleArray(arr) {
 }
 
 // ==================== منطق المسابقة (أسئلة وأجوبة) ====================
-function startCompetition(source, sectionName, duration, totalQuestions) {
-    const questions = getSectionQuestions(source, sectionName);
-    const type = getSectionType(source, sectionName);
-    if (!questions || questions.length === 0) return false;
+// يبني قائمة أسئلة مخلوطة من عدة أقسام مجتمعة، بلا تكرار، بحد أقصى العدد المطلوب
+function buildQuestionQueue(selectedSections, totalQuestions) {
+    let pool = [];
+    selectedSections.forEach(sec => {
+        const questions = getSectionQuestions(sec.source, sec.name);
+        const type = getSectionType(sec.source, sec.name);
+        questions.forEach((q, idx) => {
+            pool.push({ source: sec.source, sectionName: sec.name, questionIndex: idx, type });
+        });
+    });
+    pool = shuffleArray(pool);
+    return pool.slice(0, Math.min(totalQuestions, pool.length));
+}
 
-    const actualTotal = Math.min(totalQuestions, questions.length);
-    const indexes = shuffleArray(questions.map((_, i) => i)).slice(0, actualTotal);
+function startCompetition(selectedSections, duration, totalQuestions) {
+    if (!selectedSections || selectedSections.length === 0) return false;
+
+    const queue = buildQuestionQueue(selectedSections, totalQuestions);
+    if (queue.length === 0) return false;
 
     state.competitionActive = true;
-    state.competitionSource = source;
-    state.competitionSectionName = sectionName;
-    state.competitionType = type;
+    state.competitionSelectedSections = selectedSections;
     state.competitionDuration = duration;
-    state.competitionTotalQuestions = actualTotal;
+    state.competitionTotalQuestions = queue.length;
     state.competitionAskedCount = 0;
-    state.competitionRemainingIndexes = indexes;
-    state.competitionCorrectCounts = {};
+    state.competitionQueue = queue;
+    state.competitionResults = {};
     state.competitionFinished = false;
+    state.competitionFinalRanking = [];
     state.currentQuestion = null;
     state.roundActive = false;
+    state.waitingForNext = false;
 
     broadcastState();
     askNextQuestion();
@@ -435,55 +535,92 @@ function startCompetition(source, sectionName, duration, totalQuestions) {
 function askNextQuestion() {
     if (questionTimer) { clearTimeout(questionTimer); questionTimer = null; }
 
-    if (state.competitionRemainingIndexes.length === 0) {
+    if (state.competitionQueue.length === 0) {
         finishCompetition();
         return;
     }
 
-    const questions = getSectionQuestions(state.competitionSource, state.competitionSectionName);
-    const idx = state.competitionRemainingIndexes.shift();
-    const q = questions[idx];
+    const item = state.competitionQueue.shift();
+    const questions = getSectionQuestions(item.source, item.sectionName);
+    const q = questions[item.questionIndex];
 
     state.competitionAskedCount += 1;
     state.correctAnswersThisQuestion = [];
     state.roundStartTime = Date.now();
     state.roundActive = true;
+    state.waitingForNext = false;
 
-    if (state.competitionType === 'choices') {
-        state.currentQuestion = { text: q.text, choices: q.choices };
+    if (item.type === 'choices') {
+        state.currentQuestion = { text: q.text, choices: q.choices, sectionName: item.sectionName };
         state.currentCorrectAnswer = { choices: q.choices, correctIndex: q.correctIndex };
     } else {
-        state.currentQuestion = { text: q.text };
+        state.currentQuestion = { text: q.text, sectionName: item.sectionName };
         state.currentCorrectAnswer = { text: q.correctAnswer };
     }
 
     broadcastState();
+    broadcastCurrentRanking();
 
     questionTimer = setTimeout(() => {
-        state.roundActive = false;
-        broadcastState();
-        setTimeout(askNextQuestion, 2000);
+        onQuestionTimeUp();
     }, state.competitionDuration * 1000);
+}
+
+function onQuestionTimeUp() {
+    state.roundActive = false;
+    state.waitingForNext = true;
+    broadcastState();
+
+    if (state.competitionMode === 'auto') {
+        questionTimer = setTimeout(askNextQuestion, 2500);
+    }
+    // في الوضع اليدوي: ننتظر ضغط الأدمن على "السؤال التالي" (حدث nextQuestionManually)
 }
 
 function finishCompetition() {
     state.competitionActive = false;
     state.competitionFinished = true;
     state.roundActive = false;
+    state.waitingForNext = false;
     state.currentQuestion = null;
     if (questionTimer) { clearTimeout(questionTimer); questionTimer = null; }
+
+    // بناء الترتيب النهائي: عدد الإجابات الصحيحة تنازلياً، وعند التعادل الأسرع (مجموع/متوسط سرعة الإجابة) يتقدم
+    const ranking = Object.entries(state.competitionResults)
+        .map(([name, r]) => ({
+            name,
+            count: r.count,
+            team: r.team || null,
+            avgSpeed: r.totalAnswerTimeMs / r.count // زمن أقل = أسرع = أفضل
+        }))
+        .sort((a, b) => b.count - a.count || a.avgSpeed - b.avgSpeed);
+
+    // توزيع 3 ميداليات فقط للمراكز الثلاثة الأولى (فردي فقط؛ في وضع المجموعات لا ميداليات فردية)
+    if (!state.teamMode) {
+        const medals = ['gold', 'silver', 'bronze'];
+        ranking.slice(0, 3).forEach((player, idx) => {
+            player.medal = medals[idx];
+            addHistoricalMedal(player.name, medals[idx]);
+        });
+    }
+
+    state.competitionFinalRanking = ranking;
     broadcastState();
-    broadcastLeaderboard();
+}
+
+function nextQuestionManually() {
+    if (!state.competitionActive || !state.waitingForNext) return;
+    askNextQuestion();
 }
 
 function stopCompetitionManually() {
     state.competitionActive = false;
     state.competitionFinished = false;
     state.roundActive = false;
+    state.waitingForNext = false;
     state.currentQuestion = null;
-    state.competitionSource = null;
-    state.competitionSectionName = null;
-    state.competitionRemainingIndexes = [];
+    state.competitionSelectedSections = [];
+    state.competitionQueue = [];
     if (questionTimer) { clearTimeout(questionTimer); questionTimer = null; }
     broadcastState();
 }
@@ -493,7 +630,8 @@ io.on('connection', (socket) => {
     console.log('📶 لوحة تحكم جديدة متصلة');
     socket.emit('stateUpdate', state);
     broadcastSectionsLists();
-    broadcastLeaderboard();
+    broadcastHistoricalLeaderboard();
+    if (state.competitionActive) broadcastCurrentRanking();
 
     socket.on('createCustomSection', (payload) => {
         const name = (payload.name || '').trim();
@@ -560,6 +698,12 @@ io.on('connection', (socket) => {
         saveCustomSectionsToDB();
     });
 
+    // ---- إعدادات عامة ----
+    socket.on('setCompetitionMode', (mode) => {
+        state.competitionMode = mode === 'manual' ? 'manual' : 'auto';
+        broadcastState();
+    });
+
     socket.on('toggleRegistration', (isOpen) => {
         state.registrationOpen = isOpen;
         if (isOpen) {
@@ -573,8 +717,14 @@ io.on('connection', (socket) => {
         broadcastState();
     });
 
+    // ---- المسابقة ----
     socket.on('startCompetition', (payload) => {
-        startCompetition(payload.source, payload.sectionName, payload.duration, payload.totalQuestions);
+        // payload: { sections: [{source, name}], duration, totalQuestions }
+        startCompetition(payload.sections, payload.duration, payload.totalQuestions);
+    });
+
+    socket.on('nextQuestionManually', () => {
+        nextQuestionManually();
     });
 
     socket.on('stopCompetition', () => {
@@ -583,10 +733,12 @@ io.on('connection', (socket) => {
 
     socket.on('dismissFinalResults', () => {
         state.competitionFinished = false;
-        state.competitionCorrectCounts = {};
+        state.competitionResults = {};
+        state.competitionFinalRanking = [];
         broadcastState();
     });
 
+    // ---- السحب العشوائي ----
     socket.on('startDraw', (payload) => {
         state.drawKeyword = payload.keyword;
         state.drawParticipants = [];
@@ -603,46 +755,12 @@ io.on('connection', (socket) => {
     socket.on('pickDrawWinner', () => {
         if (state.drawParticipants.length === 0) return;
         const winner = state.drawParticipants[Math.floor(Math.random() * state.drawParticipants.length)];
-        addPoints(winner, getPlayerTeam(winner), 1);
         io.emit('drawWinnerPicked', winner);
-        broadcastLeaderboard();
     });
 
-    socket.on('resetScoresOnly', () => {
-        state.scores = {};
-        state.teamScores = { م1: 0, م2: 0 };
-        broadcastLeaderboard();
-    });
-
-    socket.on('resetAll', () => {
-        if (questionTimer) { clearTimeout(questionTimer); questionTimer = null; }
-        state = {
-            teamMode: false,
-            registrationOpen: false,
-            teams: { م1: [], م2: [] },
-            drawMode: false,
-            drawKeyword: null,
-            drawParticipants: [],
-            competitionActive: false,
-            competitionSource: null,
-            competitionSectionName: null,
-            competitionType: null,
-            competitionDuration: null,
-            competitionTotalQuestions: null,
-            competitionAskedCount: 0,
-            competitionRemainingIndexes: [],
-            currentQuestion: null,
-            currentCorrectAnswer: null,
-            roundActive: false,
-            roundStartTime: null,
-            correctAnswersThisQuestion: [],
-            competitionCorrectCounts: {},
-            competitionFinished: false,
-            scores: {},
-            teamScores: { م1: 0, م2: 0 }
-        };
-        broadcastState();
-        broadcastLeaderboard();
+    // ---- قائمة المتصدرين التاريخية ----
+    socket.on('clearHistoricalLeaderboard', () => {
+        clearHistoricalLeaderboard();
     });
 });
 
@@ -690,22 +808,32 @@ tiktokConnection.on('chat', (data) => {
         const team = getPlayerTeam(nickname);
         if (state.teamMode && !team) return;
 
-        const alreadyAnswered = state.correctAnswersThisQuestion.includes(nickname);
+        const alreadyAnswered = state.correctAnswersThisQuestion.some(a => a.name === nickname);
         if (alreadyAnswered) return;
 
+        // نوع السؤال الحالي محفوظ ضمن currentCorrectAnswer (choices تحتوي حقل choices، direct تحتوي text فقط)
+        const isChoicesQuestion = !!state.currentCorrectAnswer.choices;
         let correct = false;
-        if (state.competitionType === 'choices') {
+        if (isChoicesQuestion) {
             correct = isChoiceCorrect(comment, state.currentCorrectAnswer.choices, state.currentCorrectAnswer.correctIndex);
         } else {
             correct = isAnswerCorrect(comment, state.currentCorrectAnswer.text);
         }
 
         if (correct) {
-            state.correctAnswersThisQuestion.push(nickname);
-            state.competitionCorrectCounts[nickname] = (state.competitionCorrectCounts[nickname] || 0) + 1;
-            addPoints(nickname, team, 1);
-            io.emit('newCorrectAnswer', { name: nickname, team: team || null });
-            broadcastLeaderboard();
+            const answerTimeMs = Date.now() - state.roundStartTime;
+            state.correctAnswersThisQuestion.push({ name: nickname, team: team || null, time: answerTimeMs });
+
+            if (!state.competitionResults[nickname]) {
+                state.competitionResults[nickname] = { count: 0, team: team || null, totalAnswerTimeMs: 0, firstAnswerTime: answerTimeMs };
+            }
+            state.competitionResults[nickname].count += 1;
+            state.competitionResults[nickname].totalAnswerTimeMs += answerTimeMs;
+
+            addHistoricalCorrectAnswer(nickname);
+
+            io.emit('newCorrectAnswer', { name: nickname, team: team || null, order: state.correctAnswersThisQuestion.length });
+            broadcastCurrentRanking();
         }
     }
 });
