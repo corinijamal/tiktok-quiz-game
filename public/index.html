@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>مسابقات أحمد </title>
+<title>مسابقات أحمد - لوحة التحكم</title>
 <script src="/socket.io/socket.io.js"></script>
 <style>
     :root {
@@ -13,6 +13,8 @@
         --olive: #8a9a5b;
         --olive-dim: #6b7a45;
         --gold: #c9a24b;
+        --silver: #c0c0c8;
+        --bronze: #cd7f32;
         --red: #b5453b;
         --green: #6e9c5a;
         --text: #edead8;
@@ -81,6 +83,7 @@
     .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
     .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-sm { padding: 6px 12px; font-size: 12px; }
+    .btn-block { width: 100%; }
 
     .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
     .duration-options, .count-options { display: flex; gap: 8px; margin-top: 5px; flex-wrap: wrap; }
@@ -98,14 +101,6 @@
     .status-line.live { border-color: var(--green); color: var(--green); }
 
     .sidebar { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; height: fit-content; position: sticky; top: 16px; }
-    .sidebar h3 { display: flex; justify-content: space-between; align-items: center; }
-    .leaderboard-item { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 14px; }
-    .leaderboard-item .rank { color: var(--gold); font-weight: bold; margin-left: 6px; }
-    .leaderboard-item .pts { color: var(--olive); font-weight: bold; }
-    .team-score-box { display: flex; justify-content: space-around; margin-bottom: 10px; }
-    .team-score-box .team { text-align: center; background: var(--surface-2); border-radius: 8px; padding: 12px; flex: 1; margin: 0 5px; }
-    .team-score-box .team-name { font-size: 13px; color: var(--text-dim); }
-    .team-score-box .team-points { font-size: 26px; font-weight: bold; color: var(--gold); }
 
     .section-card {
         display: flex; justify-content: space-between; align-items: center;
@@ -113,11 +108,22 @@
         padding: 14px; margin-bottom: 10px; cursor: pointer; transition: 0.2s;
     }
     .section-card:hover { border-color: var(--olive); }
+    .section-card.selectable { cursor: pointer; }
+    .section-card.selected { border-color: var(--gold); background: rgba(201,162,75,0.12); }
     .section-card .name { font-weight: bold; font-size: 15px; }
     .section-card .meta { font-size: 12px; color: var(--text-dim); margin-top: 3px; }
+    .section-card .check { width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--border); flex-shrink: 0; display:flex; align-items:center; justify-content:center; }
+    .section-card.selected .check { background: var(--gold); border-color: var(--gold); color: #1a1c12; font-weight: bold; }
 
     .participants-list { max-height: 150px; overflow-y: auto; margin-top: 10px; font-size: 13px; }
     .participants-list span { display: inline-block; background: var(--surface-2); padding: 4px 10px; border-radius: 12px; margin: 3px; }
+
+    .numbered-participants { max-height: 220px; overflow-y: auto; margin-top: 10px; border: 1px solid var(--border); border-radius: 8px; }
+    .numbered-participants .p-item {
+        display: flex; gap: 8px; padding: 8px 12px; font-size: 14px; border-bottom: 1px solid var(--border);
+    }
+    .numbered-participants .p-item:last-child { border-bottom: none; }
+    .numbered-participants .p-num { color: var(--gold); font-weight: bold; min-width: 22px; }
 
     .big-back-btn { margin-bottom: 16px; }
 
@@ -138,8 +144,27 @@
     }
     .choice-box .choice-num { color: var(--gold); font-weight: bold; margin-left: 6px; }
 
+    .current-ranking { max-width: 400px; margin: 20px auto 0; text-align: right; }
+    .current-ranking .item {
+        display: flex; justify-content: space-between; padding: 8px 12px;
+        background: var(--surface-2); border-radius: 8px; margin-bottom: 6px; font-size: 14px;
+    }
+    .current-ranking .item .ord { color: var(--gold); font-weight: bold; margin-left: 6px; }
+    .current-ranking .item .cnt { color: var(--olive); font-weight: bold; }
+
     .final-result { text-align: center; padding: 20px; }
     .final-result h2 { color: var(--gold); font-size: 26px; }
+    .podium-list { max-width: 450px; margin: 16px auto; text-align: right; }
+    .podium-list .p-row {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 12px 14px; background: var(--surface-2); border-radius: 10px; margin-bottom: 8px; font-size: 15px;
+    }
+    .podium-list .p-row.gold { border: 1px solid var(--gold); }
+    .podium-list .p-row.silver { border: 1px solid var(--silver); }
+    .podium-list .p-row.bronze { border: 1px solid var(--bronze); }
+    .podium-list .p-rank { font-weight: bold; }
+    .podium-list .p-pts { color: var(--olive); font-weight: bold; }
+
     .correct-counts-list { max-height: 300px; overflow-y: auto; margin-top: 16px; text-align: right; }
     .correct-counts-list .item {
         display: flex; justify-content: space-between; padding: 8px 12px;
@@ -150,6 +175,28 @@
     footer.controls-fixed { display: flex; gap: 10px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); flex-wrap: wrap; }
 
     .empty-hint { color: var(--text-dim); font-size: 13px; text-align: center; padding: 20px; }
+
+    /* جدول قائمة المتصدرين التاريخية */
+    .leaderboard-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .leaderboard-table th {
+        color: var(--gold); font-size: 12px; padding: 8px 4px; border-bottom: 1px solid var(--border); text-align: center;
+    }
+    .leaderboard-table th:first-child { text-align: right; }
+    .leaderboard-table td { padding: 8px 4px; border-bottom: 1px solid var(--border); text-align: center; }
+    .leaderboard-table td:first-child { text-align: right; font-weight: bold; }
+    .leaderboard-table .medal-col { font-size: 15px; }
+
+    .confirm-overlay {
+        position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none;
+        align-items: center; justify-content: center; z-index: 1000; padding: 20px;
+    }
+    .confirm-overlay.active { display: flex; }
+    .confirm-box {
+        background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+        padding: 24px; max-width: 320px; text-align: center;
+    }
+    .confirm-box p { margin-top: 0; font-size: 15px; }
+    .confirm-box .row { justify-content: center; margin-top: 16px; }
 </style>
 </head>
 <body>
@@ -165,52 +212,36 @@
 <div class="layout">
     <div class="main-col">
         <div class="tabs">
-            <button class="tab-btn active" data-tab="settings">⚙ الإعدادات والمجموعات</button>
+            <button class="tab-btn active" data-tab="settings">⚙️ الإعدادات</button>
             <button class="tab-btn" data-tab="qna">❓ أسئلة وأجوبة</button>
             <button class="tab-btn" data-tab="draw">🎲 سحب عشوائي</button>
         </div>
 
-        <!-- ===================== تبويب الإعدادات والمجموعات ===================== -->
+        <!-- ===================== تبويب الإعدادات ===================== -->
         <div class="panel active" id="panel-settings">
 
-            <!-- شاشة رئيسية: زران فقط -->
             <div id="settingsHome">
                 <h3>إدارة الأقسام الخاصة</h3>
                 <div class="row">
                     <button class="btn btn-primary" onclick="showAddSectionScreen()">➕ إضافة قسم</button>
-                    <button class="btn btn-outline" onclick="showEditSectionsScreen()">✏ تعديل قسم</button>
+                    <button class="btn btn-outline" onclick="showEditSectionsScreen()">✏️ تعديل قسم</button>
                 </div>
 
-                <h3 style="margin-top:28px;">نظام المشاركة</h3>
+                <h3 style="margin-top:28px;">نظام المسابقة</h3>
                 <div class="row">
-                    <button class="btn btn-outline" id="modeIndividualBtn" onclick="setTeamMode(false)">فردي</button>
-                    <button class="btn btn-outline" id="modeTeamBtn" onclick="setTeamMode(true)">مجموعات (م1 / م2)</button>
+                    <button class="btn btn-outline" id="compModeManualBtn" onclick="setCompetitionMode('manual')">يدوي</button>
+                    <button class="btn btn-outline" id="compModeAutoBtn" onclick="setCompetitionMode('auto')">تلقائي</button>
                 </div>
+                <p style="color:var(--text-dim); font-size:12px; margin-top:8px;">
+                    يدوي: يظهر زر "السؤال التالي" بعد كل سؤال. تلقائي: ينتقل تلقائياً بعد لحظات.
+                </p>
 
-                <div id="teamRegistrationBox" style="display:none; margin-top:16px;">
-                    <h4>تسجيل المجموعات</h4>
-                    <p style="color:var(--text-dim); font-size:13px;">يكتب المشاركون "م1" أو "م2" في تعليقات البث للانضمام. م1 = فريق الشباب، م2 = فريق البنات.</p>
-                    <div class="row">
-                        <button class="btn btn-primary" onclick="toggleRegistration(true)">🔓 فتح باب التسجيل</button>
-                        <button class="btn btn-danger" onclick="toggleRegistration(false)">🔒 إقفال التسجيل</button>
-                    </div>
-                    <div class="status-line" id="regStatus">التسجيل مغلق</div>
-                    <div class="row" style="margin-top:10px; align-items:flex-start;">
-                        <div style="flex:1;">
-                            <strong style="color:var(--olive);">م1 (الشباب) - <span id="team1Count">0</span></strong>
-                            <div class="participants-list" id="team1List"></div>
-                        </div>
-                        <div style="flex:1;">
-                            <strong style="color:var(--olive);">م2 (البنات) - <span id="team2Count">0</span></strong>
-                            <div class="participants-list" id="team2List"></div>
-                        </div>
-                    </div>
+                <h3 style="margin-top:28px;">🏆 قائمة المتصدرين (سجل تاريخي دائم)</h3>
+                <div class="row" style="justify-content:space-between;">
+                    <span style="color:var(--text-dim); font-size:12px;">مجموع كل الأوقات لكل المسابقات</span>
+                    <button class="btn btn-danger btn-sm" onclick="askClearHistoricalLeaderboard()">🗑️</button>
                 </div>
-
-                <footer class="controls-fixed">
-                    <button class="btn btn-danger" onclick="resetScoresOnly()">🔄 تصفير النقاط فقط</button>
-                    <button class="btn btn-danger" onclick="if(confirm('هل أنت متأكد من إعادة تعيين كل شيء؟')) resetAll()">🗑 إعادة تعيين كاملة</button>
-                </footer>
+                <div id="historicalLeaderboardBox" style="margin-top:10px;"></div>
             </div>
 
             <!-- شاشة: إضافة قسم جديد -->
@@ -243,7 +274,7 @@
                 <button class="btn btn-outline btn-sm big-back-btn" onclick="showEditSectionsScreen()">→ رجوع لقائمة الأقسام</button>
                 <div class="row" style="justify-content:space-between;">
                     <h3 id="editSectionTitle">قسم</h3>
-                    <button class="btn btn-danger btn-sm" onclick="deleteCurrentSection()">🗑 حذف القسم بالكامل</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteCurrentSection()">🗑️ حذف القسم بالكامل</button>
                 </div>
 
                 <h4>إضافة سؤال جديد</h4>
@@ -273,34 +304,29 @@
         <!-- ===================== تبويب أسئلة وأجوبة ===================== -->
         <div class="panel" id="panel-qna">
 
-            <!-- الشاشة الرئيسية: اختيار قسم -->
+            <!-- الشاشة الرئيسية: زر إنشاء مسابقة -->
             <div id="qnaHome">
-                <h3>بنك الأسئلة الثابتة</h3>
-                <div id="bankSectionsBox"></div>
-
-                <h3 style="margin-top:24px;">الأسئلة الخاصة</h3>
-                <div id="customSectionsBoxQna"></div>
-                <p class="empty-hint" id="noCustomSectionsHint" style="display:none;">لا توجد أقسام خاصة بعد. أضفها من تبويب "الإعدادات والمجموعات".</p>
+                <button class="btn btn-primary btn-block" onclick="showCreateCompetitionScreen()" style="padding:16px; font-size:16px;">🚀 إنشاء مسابقة</button>
             </div>
 
-            <!-- شاشة: إعداد المسابقة بعد اختيار قسم -->
-            <div id="qnaSetupScreen" style="display:none;">
+            <!-- شاشة: إنشاء مسابقة - اختيار الأقسام -->
+            <div id="createCompScreen" style="display:none;">
                 <button class="btn btn-outline btn-sm big-back-btn" onclick="backToQnaHome()">→ رجوع</button>
-                <h3>إعداد المسابقة: <span id="setupSectionName"></span></h3>
-                <p style="color:var(--text-dim); font-size:13px;">النوع: <strong id="setupSectionType"></strong></p>
+                <h3>اختر قسماً واحداً أو أكثر</h3>
 
-                <label>مدة كل سؤال (ثانية) - ثابتة طوال المسابقة</label>
+                <h4>بنك الأسئلة الثابتة</h4>
+                <div id="bankSectionsSelectBox"></div>
+
+                <h4>الأسئلة الخاصة</h4>
+                <div id="customSectionsSelectBox"></div>
+                <p class="empty-hint" id="noCustomSectionsHint" style="display:none;">لا توجد أقسام خاصة بعد. أضفها من تبويب "الإعدادات".</p>
+
+                <label style="margin-top:20px;">مدة كل سؤال (ثانية) - ثابتة طوال المسابقة</label>
                 <div class="duration-options" id="qnaDurationOptions">
                     <div class="duration-chip" data-val="15">15</div>
                     <div class="duration-chip selected" data-val="20">20</div>
                     <div class="duration-chip" data-val="25">25</div>
                     <div class="duration-chip" data-val="30">30</div>
-                </div>
-
-                <label>نظام المشاركة</label>
-                <div class="row">
-                    <button class="btn btn-outline" id="setupModeIndividualBtn" onclick="setTeamMode(false)">فردي</button>
-                    <button class="btn btn-outline" id="setupModeTeamBtn" onclick="setTeamMode(true)">مجموعات</button>
                 </div>
 
                 <label>عدد الأسئلة</label>
@@ -313,17 +339,49 @@
                     <div class="duration-chip" data-val="30">30</div>
                 </div>
 
-                <footer class="controls-fixed">
-                    <button class="btn btn-primary" onclick="launchCompetition()">🚀 بدء المسابقة</button>
+                <label>نظام المشاركة</label>
+                <div class="row">
+                    <button class="btn btn-outline" id="setupModeIndividualBtn" onclick="chooseParticipationMode(false)">فردي</button>
+                    <button class="btn btn-outline" id="setupModeTeamBtn" onclick="chooseParticipationMode(true)">مجموعات</button>
+                </div>
+
+                <!-- تظهر فور اختيار فردي -->
+                <footer class="controls-fixed" id="individualStartFooter" style="display:none;">
+                    <button class="btn btn-primary btn-block" onclick="launchCompetition()">🚀 بدء المسابقة</button>
                 </footer>
+
+                <!-- تظهر فور اختيار مجموعات -->
+                <div id="teamRegistrationSetupBox" style="display:none; margin-top:16px;">
+                    <h4>تسجيل المجموعات</h4>
+                    <p style="color:var(--text-dim); font-size:13px;">يكتب المشاركون "م1" أو "م2" في تعليقات البث للانضمام. م1 = فريق الشباب، م2 = فريق البنات.</p>
+                    <div class="row">
+                        <button class="btn btn-primary" onclick="toggleRegistration(true)">🔓 فتح باب التسجيل</button>
+                        <button class="btn btn-danger" onclick="toggleRegistration(false)">🔒 إقفال التسجيل</button>
+                    </div>
+                    <div class="status-line" id="regStatus">التسجيل مغلق</div>
+
+                    <div class="row" style="margin-top:10px; align-items:flex-start;">
+                        <div style="flex:1;">
+                            <strong style="color:var(--olive);">م1 (الشباب) - <span id="team1Count">0</span></strong>
+                            <div class="numbered-participants" id="team1List"></div>
+                        </div>
+                        <div style="flex:1;">
+                            <strong style="color:var(--olive);">م2 (البنات) - <span id="team2Count">0</span></strong>
+                            <div class="numbered-participants" id="team2List"></div>
+                        </div>
+                    </div>
+
+                    <footer class="controls-fixed">
+                        <button class="btn btn-primary btn-block" onclick="launchCompetition()">🚀 بدء المسابقة</button>
+                    </footer>
+                </div>
             </div>
 
-            <!-- شاشة: المسابقة الحية (هذا ما يُشارك مع المشاهدين) -->
+            <!-- شاشة: المسابقة الحية -->
             <div id="qnaLiveScreen" style="display:none;">
                 <div class="live-competition">
                     <div class="badge" id="liveBadge">مسابقة فردية</div>
-                    <div class="meta-line">القسم: <strong id="liveSectionName"></strong></div>
-                    <div class="meta-line">النوع: <strong id="liveTypeLabel"></strong></div>
+                    <div class="meta-line" id="liveSectionsNames"></div>
                     <div class="meta-line" id="liveProgress"></div>
 
                     <div id="liveTimerBox" style="display:none;">
@@ -335,17 +393,21 @@
                     <div class="choices-grid" id="liveChoicesGrid" style="display:none;"></div>
 
                     <div id="liveWaitingNext" class="status-line" style="display:none;">⏳ السؤال التالي بعد لحظات...</div>
+                    <button class="btn btn-gold" id="nextQuestionBtn" style="display:none; margin-top:12px;" onclick="nextQuestionManually()">➡️ السؤال التالي</button>
+
+                    <div class="current-ranking" id="currentRankingBox"></div>
                 </div>
 
                 <footer class="controls-fixed">
-                    <button class="btn btn-danger" onclick="if(confirm('هل تريد إيقاف المسابقة؟')) stopCompetition()">⏹ إيقاف المسابقة</button>
+                    <button class="btn btn-danger" onclick="if(confirm('هل تريد إيقاف المسابقة؟')) stopCompetition()">⏹️ إيقاف المسابقة</button>
                 </footer>
             </div>
 
-            <!-- شاشة: نتيجة نهائية بعد انتهاء المسابقة -->
+            <!-- شاشة: نتيجة نهائية -->
             <div id="qnaFinalScreen" style="display:none;">
                 <div class="final-result">
                     <h2>🏁 انتهت المسابقة</h2>
+                    <div class="podium-list" id="podiumList"></div>
                     <button class="btn btn-gold" onclick="toggleFinalList()">👥 أصحاب الإجابات الصحيحة</button>
                     <div id="finalCorrectList" class="correct-counts-list" style="display:none;"></div>
                 </div>
@@ -362,8 +424,8 @@
             <input type="text" id="drawKeyword" placeholder="مثال: انضم">
 
             <footer class="controls-fixed">
-                <button class="btn btn-primary" onclick="startDraw()">▶ بدء جمع المشاركين</button>
-                <button class="btn btn-outline" onclick="stopDrawCollection()">⏹ إيقاف الجمع</button>
+                <button class="btn btn-primary" onclick="startDraw()">▶️ بدء جمع المشاركين</button>
+                <button class="btn btn-outline" onclick="stopDrawCollection()">⏹️ إيقاف الجمع</button>
                 <button class="btn btn-gold" onclick="pickDrawWinner()">🎉 سحب فائز</button>
             </footer>
 
@@ -372,20 +434,21 @@
         </div>
     </div>
 
-    <!-- ===================== الشريط الجانبي: لوحة المتصدرين ===================== -->
+    <!-- ===================== الشريط الجانبي ===================== -->
     <div class="sidebar">
-        <h3>🏆 لوحة المتصدرين</h3>
-        <div id="teamScoreBox" class="team-score-box" style="display:none;">
-            <div class="team">
-                <div class="team-name">م1 الشباب</div>
-                <div class="team-points" id="team1Points">0</div>
-            </div>
-            <div class="team">
-                <div class="team-name">م2 البنات</div>
-                <div class="team-points" id="team2Points">0</div>
-            </div>
+        <h3>ℹ️ الحالة</h3>
+        <p style="color:var(--text-dim); font-size:13px;" id="sidebarInfo">لا توجد مسابقة نشطة حالياً.</p>
+    </div>
+</div>
+
+<!-- نافذة تأكيد مسح السجل التاريخي -->
+<div class="confirm-overlay" id="confirmClearOverlay">
+    <div class="confirm-box">
+        <p>هل تريد محو السجل التاريخي بالكامل؟ لا يمكن التراجع عن هذا الإجراء.</p>
+        <div class="row">
+            <button class="btn btn-danger" onclick="confirmClearHistoricalLeaderboard()">نعم، امسح</button>
+            <button class="btn btn-outline" onclick="closeClearConfirm()">رجوع</button>
         </div>
-        <div id="individualLeaderboard"></div>
     </div>
 </div>
 
@@ -396,9 +459,10 @@
     let customSections = {};
 
     let newSectionType = 'direct';
-    let selectedQuestionSource = null;  // 'bank' | 'custom'
-    let selectedQuestionSectionName = null;
     let currentEditingSectionName = null;
+
+    // اختيار الأقسام لإنشاء مسابقة: مصفوفة { source, name }
+    let selectedSectionsForComp = [];
     let qnaDuration = 20;
     let questionCount = 10;
     let liveCountdownInterval = null;
@@ -547,57 +611,108 @@
         socket.emit('deleteCustomQuestion', { sectionName: currentEditingSectionName, questionId });
     }
 
-    // ==================== نظام فردي/مجموعات ====================
-    function setTeamMode(isTeam) { socket.emit('setTeamMode', isTeam); }
+    // ==================== إعدادات عامة ====================
+    function setCompetitionMode(mode) { socket.emit('setCompetitionMode', mode); }
     function toggleRegistration(isOpen) { socket.emit('toggleRegistration', isOpen); }
-    function resetScoresOnly() { socket.emit('resetScoresOnly'); }
-    function resetAll() { socket.emit('resetAll'); }
+
+    // ==================== قائمة المتصدرين التاريخية ====================
+    function askClearHistoricalLeaderboard() {
+        document.getElementById('confirmClearOverlay').classList.add('active');
+    }
+    function closeClearConfirm() {
+        document.getElementById('confirmClearOverlay').classList.remove('active');
+    }
+    function confirmClearHistoricalLeaderboard() {
+        socket.emit('clearHistoricalLeaderboard');
+        closeClearConfirm();
+    }
+
+    socket.on('historicalLeaderboardUpdate', (list) => {
+        const box = document.getElementById('historicalLeaderboardBox');
+        if (!list || list.length === 0) {
+            box.innerHTML = '<p class="empty-hint">لا يوجد سجل بعد.</p>';
+            return;
+        }
+        const rows = list.map(p => `
+            <tr>
+                <td>${p.name}</td>
+                <td>${p.correctAnswers}</td>
+                <td class="medal-col">${p.gold > 0 ? '🥇' : ''}${p.gold > 0 ? ' '+p.gold : ''}</td>
+                <td class="medal-col">${p.silver > 0 ? '🥈' : ''}${p.silver > 0 ? ' '+p.silver : ''}</td>
+                <td class="medal-col">${p.bronze > 0 ? '🥉' : ''}${p.bronze > 0 ? ' '+p.bronze : ''}</td>
+            </tr>
+        `).join('');
+        box.innerHTML = `
+            <table class="leaderboard-table">
+                <thead>
+                    <tr><th>الاسم</th><th>الإجابات</th><th>🥇</th><th>🥈</th><th>🥉</th></tr>
+                </thead>
+                <tbody>${rows}</tbody>
+            </table>
+        `;
+    });
 
     // ==================== تبويب أسئلة وأجوبة ====================
     function showQnaScreen(id) {
-        ['qnaHome', 'qnaSetupScreen', 'qnaLiveScreen', 'qnaFinalScreen'].forEach(s => {
+        ['qnaHome', 'createCompScreen', 'qnaLiveScreen', 'qnaFinalScreen'].forEach(s => {
             document.getElementById(s).style.display = (s === id) ? 'block' : 'none';
         });
     }
 
-    function renderQnaHome() {
-        const bankBox = document.getElementById('bankSectionsBox');
-        bankBox.innerHTML = bankSections.map(s => `
-            <div class="section-card" onclick="selectSection('bank', '${s.name}', '${s.type}')">
-                <div>
-                    <div class="name">${s.name}</div>
-                    <div class="meta">${s.type === 'choices' ? 'خيارات' : 'مباشر'} · ${s.count} سؤال</div>
+    function showCreateCompetitionScreen() {
+        selectedSectionsForComp = [];
+        document.getElementById('individualStartFooter').style.display = 'none';
+        document.getElementById('teamRegistrationSetupBox').style.display = 'none';
+        document.getElementById('setupModeIndividualBtn').classList.remove('btn-primary');
+        document.getElementById('setupModeTeamBtn').classList.remove('btn-primary');
+        renderSectionSelectBoxes();
+        showQnaScreen('createCompScreen');
+    }
+
+    function backToQnaHome() { showQnaScreen('qnaHome'); }
+
+    function renderSectionSelectBoxes() {
+        const bankBox = document.getElementById('bankSectionsSelectBox');
+        bankBox.innerHTML = bankSections.map(s => {
+            const isSelected = selectedSectionsForComp.some(sel => sel.source === 'bank' && sel.name === s.name);
+            return `
+                <div class="section-card selectable ${isSelected ? 'selected' : ''}" onclick="toggleSectionSelection('bank', '${s.name}')">
+                    <div>
+                        <div class="name">${s.name}</div>
+                        <div class="meta">${s.type === 'choices' ? 'خيارات' : 'مباشر'} · ${s.count} سؤال</div>
+                    </div>
+                    <div class="check">${isSelected ? '✓' : ''}</div>
                 </div>
-                <span>›</span>
-            </div>
-        `).join('') || '<p class="empty-hint">لا توجد أقسام ثابتة بعد.</p>';
+            `;
+        }).join('') || '<p class="empty-hint">لا توجد أقسام ثابتة بعد.</p>';
 
         const customNames = Object.keys(customSections);
-        const customBox = document.getElementById('customSectionsBoxQna');
+        const customBox = document.getElementById('customSectionsSelectBox');
         document.getElementById('noCustomSectionsHint').style.display = customNames.length === 0 ? 'block' : 'none';
         customBox.innerHTML = customNames.map(name => {
             const sec = customSections[name];
+            const isSelected = selectedSectionsForComp.some(sel => sel.source === 'custom' && sel.name === name);
             return `
-                <div class="section-card" onclick="selectSection('custom', '${name}', '${sec.type}')">
+                <div class="section-card selectable ${isSelected ? 'selected' : ''}" onclick="toggleSectionSelection('custom', '${name}')">
                     <div>
                         <div class="name">${name}</div>
                         <div class="meta">${sec.type === 'choices' ? 'خيارات' : 'مباشر'} · ${sec.questions.length} سؤال</div>
                     </div>
-                    <span>›</span>
+                    <div class="check">${isSelected ? '✓' : ''}</div>
                 </div>
             `;
         }).join('');
     }
 
-    function selectSection(source, sectionName, type) {
-        selectedQuestionSource = source;
-        selectedQuestionSectionName = sectionName;
-        document.getElementById('setupSectionName').innerText = sectionName;
-        document.getElementById('setupSectionType').innerText = type === 'choices' ? 'خيارات' : 'مباشر';
-        showQnaScreen('qnaSetupScreen');
+    function toggleSectionSelection(source, name) {
+        const idx = selectedSectionsForComp.findIndex(s => s.source === source && s.name === name);
+        if (idx >= 0) {
+            selectedSectionsForComp.splice(idx, 1);
+        } else {
+            selectedSectionsForComp.push({ source, name });
+        }
+        renderSectionSelectBoxes();
     }
-
-    function backToQnaHome() { showQnaScreen('qnaHome'); }
 
     document.querySelectorAll('#qnaDurationOptions .duration-chip').forEach(chip => {
         chip.addEventListener('click', () => {
@@ -614,18 +729,25 @@
         });
     });
 
+    function chooseParticipationMode(isTeam) {
+        socket.emit('setTeamMode', isTeam);
+        document.getElementById('setupModeIndividualBtn').classList.toggle('btn-primary', !isTeam);
+        document.getElementById('setupModeTeamBtn').classList.toggle('btn-primary', isTeam);
+        document.getElementById('individualStartFooter').style.display = isTeam ? 'none' : 'block';
+        document.getElementById('teamRegistrationSetupBox').style.display = isTeam ? 'block' : 'none';
+    }
+
     function launchCompetition() {
+        if (selectedSectionsForComp.length === 0) { alert('يرجى اختيار قسم واحد على الأقل'); return; }
         socket.emit('startCompetition', {
-            source: selectedQuestionSource,
-            sectionName: selectedQuestionSectionName,
+            sections: selectedSectionsForComp,
             duration: qnaDuration,
             totalQuestions: questionCount
         });
     }
 
-    function stopCompetition() {
-        socket.emit('stopCompetition');
-    }
+    function nextQuestionManually() { socket.emit('nextQuestionManually'); }
+    function stopCompetition() { socket.emit('stopCompetition'); }
 
     function dismissFinalResults() {
         socket.emit('dismissFinalResults');
@@ -650,7 +772,9 @@
     socket.on('sectionsUpdate', (data) => {
         bankSections = data.bankSections;
         customSections = data.customSections;
-        renderQnaHome();
+        if (document.getElementById('createCompScreen').style.display === 'block') {
+            renderSectionSelectBoxes();
+        }
         if (document.getElementById('editSectionsListScreen').style.display === 'block') {
             renderCustomSectionsListBox();
         }
@@ -664,6 +788,10 @@
         renderState();
     });
 
+    socket.on('currentRankingUpdate', (data) => {
+        renderCurrentRanking(data);
+    });
+
     socket.on('drawParticipantsUpdate', (list) => {
         document.getElementById('drawCount').innerText = list.length;
         document.getElementById('drawList').innerHTML = list.map(n => `<span>${n}</span>`).join('');
@@ -673,45 +801,39 @@
         alert('🎉 الفائز: ' + winner);
     });
 
-    socket.on('leaderboardUpdate', (data) => {
-        if (data.teamMode) {
-            document.getElementById('teamScoreBox').style.display = 'flex';
-            document.getElementById('individualLeaderboard').style.display = 'none';
-            document.getElementById('team1Points').innerText = data.teamScores['م1'] || 0;
-            document.getElementById('team2Points').innerText = data.teamScores['م2'] || 0;
-        } else {
-            document.getElementById('teamScoreBox').style.display = 'none';
-            const box = document.getElementById('individualLeaderboard');
-            box.style.display = 'block';
-            box.innerHTML = data.scores.map((p, i) => `
-                <div class="leaderboard-item">
-                    <span><span class="rank">${i+1}.</span> ${p.name}</span>
-                    <span class="pts">${p.points}</span>
-                </div>
-            `).join('') || '<p style="color:var(--text-dim); font-size:13px;">لا توجد نقاط بعد</p>';
-        }
-    });
-
     function renderState() {
         if (!currentState) return;
 
-        // نظام فردي/مجموعات (الإعدادات + شاشة الإعداد)
-        document.getElementById('modeIndividualBtn').classList.toggle('btn-primary', !currentState.teamMode);
-        document.getElementById('modeTeamBtn').classList.toggle('btn-primary', currentState.teamMode);
-        document.getElementById('setupModeIndividualBtn').classList.toggle('btn-primary', !currentState.teamMode);
-        document.getElementById('setupModeTeamBtn').classList.toggle('btn-primary', currentState.teamMode);
-        document.getElementById('teamRegistrationBox').style.display = currentState.teamMode ? 'block' : 'none';
+        // نظام المسابقة يدوي/تلقائي
+        document.getElementById('compModeManualBtn').classList.toggle('btn-primary', currentState.competitionMode === 'manual');
+        document.getElementById('compModeAutoBtn').classList.toggle('btn-primary', currentState.competitionMode === 'auto');
 
+        // مجموعات
         document.getElementById('regStatus').innerText = currentState.registrationOpen ? '🟢 التسجيل مفتوح - بانتظار م1/م2' : '🔴 التسجيل مغلق';
         document.getElementById('regStatus').classList.toggle('live', currentState.registrationOpen);
 
         document.getElementById('team1Count').innerText = currentState.teams['م1'].length;
         document.getElementById('team2Count').innerText = currentState.teams['م2'].length;
-        document.getElementById('team1List').innerHTML = currentState.teams['م1'].map(n => `<span>${n}</span>`).join('');
-        document.getElementById('team2List').innerHTML = currentState.teams['م2'].map(n => `<span>${n}</span>`).join('');
+        document.getElementById('team1List').innerHTML = currentState.teams['م1'].map((n, i) => `
+            <div class="p-item"><span class="p-num">${i+1}.</span><span>${n}</span></div>
+        `).join('') || '<div class="p-item" style="color:var(--text-dim);">لا يوجد مشاركون بعد</div>';
+        document.getElementById('team2List').innerHTML = currentState.teams['م2'].map((n, i) => `
+            <div class="p-item"><span class="p-num">${i+1}.</span><span>${n}</span></div>
+        `).join('') || '<div class="p-item" style="color:var(--text-dim);">لا يوجد مشاركون بعد</div>';
 
-        // حالة تبويب أسئلة وأجوبة
         renderQnaState();
+        renderSidebarInfo();
+    }
+
+    function renderSidebarInfo() {
+        const info = document.getElementById('sidebarInfo');
+        if (currentState.competitionActive) {
+            info.innerText = `مسابقة جارية: سؤال ${currentState.competitionAskedCount} من ${currentState.competitionTotalQuestions}`;
+        } else if (currentState.competitionFinished) {
+            info.innerText = 'انتهت المسابقة الأخيرة.';
+        } else {
+            info.innerText = 'لا توجد مسابقة نشطة حالياً.';
+        }
     }
 
     function renderQnaState() {
@@ -727,9 +849,7 @@
             return;
         }
 
-        // لا مسابقة نشطة ولا نتيجة معلّقة: تأكد أننا في الشاشة المناسبة
-        // (لا نجبر العودة للرئيسية إن كان الأدمن وسط إعداد مسابقة جديدة)
-        const setupVisible = document.getElementById('qnaSetupScreen').style.display === 'block';
+        const setupVisible = document.getElementById('createCompScreen').style.display === 'block';
         if (!setupVisible) {
             const liveVisible = document.getElementById('qnaLiveScreen').style.display === 'block';
             if (liveVisible) showQnaScreen('qnaHome');
@@ -738,21 +858,23 @@
 
     function renderLiveCompetition() {
         document.getElementById('liveBadge').innerText = currentState.teamMode ? 'مسابقة مجموعات' : 'مسابقة فردية';
-        document.getElementById('liveSectionName').innerText = currentState.competitionSectionName || '';
-        document.getElementById('liveTypeLabel').innerText = currentState.competitionType === 'choices' ? 'خيارات' : 'مباشر';
+        const sectionsNames = (currentState.competitionSelectedSections || []).map(s => s.name).join('، ');
+        document.getElementById('liveSectionsNames').innerText = 'الأقسام: ' + sectionsNames;
         document.getElementById('liveProgress').innerText = `السؤال ${currentState.competitionAskedCount} من ${currentState.competitionTotalQuestions}`;
 
         const q = currentState.currentQuestion;
         const timerBox = document.getElementById('liveTimerBox');
         const waitingBox = document.getElementById('liveWaitingNext');
+        const nextBtn = document.getElementById('nextQuestionBtn');
         const choicesGrid = document.getElementById('liveChoicesGrid');
 
         if (currentState.roundActive && q) {
             document.getElementById('liveQuestionText').innerText = q.text;
             waitingBox.style.display = 'none';
+            nextBtn.style.display = 'none';
             timerBox.style.display = 'block';
 
-            if (currentState.competitionType === 'choices' && q.choices) {
+            if (q.choices) {
                 choicesGrid.style.display = 'grid';
                 choicesGrid.innerHTML = q.choices.map((c, i) => `
                     <div class="choice-box"><span class="choice-num">${i+1}.</span> ${c}</div>
@@ -763,11 +885,31 @@
             }
 
             startLiveCountdown();
-        } else {
-            waitingBox.style.display = 'block';
+        } else if (currentState.waitingForNext) {
             timerBox.style.display = 'none';
-            choicesGrid.style.display = 'none';
             stopLiveCountdown();
+
+            if (currentState.competitionMode === 'manual') {
+                waitingBox.style.display = 'none';
+                nextBtn.style.display = 'inline-block';
+            } else {
+                waitingBox.style.display = 'block';
+                nextBtn.style.display = 'none';
+            }
+        }
+    }
+
+    function renderCurrentRanking(data) {
+        const box = document.getElementById('currentRankingBox');
+        if (data.teamMode) {
+            box.innerHTML = `
+                <div class="item"><span>م1 (الشباب)</span><span class="cnt">${data.teamCounts['م1'] || 0}</span></div>
+                <div class="item"><span>م2 (البنات)</span><span class="cnt">${data.teamCounts['م2'] || 0}</span></div>
+            `;
+        } else {
+            box.innerHTML = data.ranking.map((p, i) => `
+                <div class="item"><span><span class="ord">${i+1}.</span>${p.name}</span><span class="cnt">${p.count}</span></div>
+            `).join('') || '';
         }
     }
 
@@ -791,17 +933,26 @@
     }
 
     function renderFinalResults() {
-        const counts = currentState.competitionCorrectCounts || {};
-        const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-        const box = document.getElementById('finalCorrectList');
-        box.innerHTML = sorted.map(([name, count]) => `
-            <div class="item"><span>${name}</span><span class="count">${count}</span></div>
-        `).join('') || '<p class="empty-hint">لا توجد إجابات صحيحة مسجلة.</p>';
-        box.style.display = 'none';
-    }
+        const ranking = currentState.competitionFinalRanking || [];
+        const medalEmoji = { gold: '🥇', silver: '🥈', bronze: '🥉' };
+        const medalClass = { gold: 'gold', silver: 'silver', bronze: 'bronze' };
+        const rankLabels = ['المركز الأول', 'المركز الثاني', 'المركز الثالث'];
 
-    // تحميل أولي
-    renderQnaHome();
+        const podiumBox = document.getElementById('podiumList');
+        const top3 = ranking.slice(0, 3);
+        podiumBox.innerHTML = top3.map((p, i) => `
+            <div class="p-row ${medalClass[p.medal] || ''}">
+                <span class="p-rank">${rankLabels[i]}: ${p.name} ${medalEmoji[p.medal] || ''}</span>
+                <span class="p-pts">${p.count} نقطة</span>
+            </div>
+        `).join('') || '<p class="empty-hint">لا يوجد مشاركون.</p>';
+
+        const listBox = document.getElementById('finalCorrectList');
+        listBox.innerHTML = ranking.map((p, i) => `
+            <div class="item"><span>${i+1}. ${p.name}</span><span class="count">${p.count}</span></div>
+        `).join('') || '<p class="empty-hint">لا توجد إجابات صحيحة مسجلة.</p>';
+        listBox.style.display = 'none';
+    }
 </script>
 </body>
 </html>
