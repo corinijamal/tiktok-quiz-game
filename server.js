@@ -315,6 +315,44 @@ let questionBank = {
             { text: "ما اسم جبل نزل فيه أول الوحي على النبي؟", correctAnswer: "جبل النور" },
             { text: "ما اسم الغار الذي كان يتعبد فيه النبي قبل البعثة؟", correctAnswer: "غار حراء" }
         ]
+    },
+    "شعر": {
+        type: "direct",
+        questions: [
+            { text: "أكمل البيت الشعري:\nيا منزل الآيات والفرقان\nبيني وبينك حرمة ...\nمساعدة | أول حرف: ا | آخر حرف: ن | عدد الحروف: 6", correctAnswer: "القرآن" },
+            { text: "أكمل البيت الشعري:\nاشرح به صدري لمعرفة ...\nواعصم به قلبي من الشيطان\nمساعدة | أول حرف: ا | آخر حرف: ى | عدد الحروف: 5", correctAnswer: "الهدى" },
+            { text: "أكمل البيت الشعري:\nيسر به أمري وأقض ...\nوأجر به جسدي من النيران\nمساعدة | أول حرف: م | آخر حرف: ي | عدد الحروف: 5", correctAnswer: "مآربي" },
+            { text: "أكمل البيت الشعري:\nواحطط به ... وأخلص نيتي\nواشدد به أزري وأصلح شاني\nمساعدة | أول حرف: و | آخر حرف: ي | عدد الحروف: 4", correctAnswer: "وزري" },
+            { text: "أكمل البيت الشعري:\nواكشف به ضري وحقق توبتي\nواربح به ... بلا خسران\nمساعدة | أول حرف: ب | آخر حرف: ي | عدد الحروف: 4", correctAnswer: "بيعي" },
+            { text: "أكمل البيت الشعري:\nطهر به قلبي وصف ...\nأجمل به ذكري واعل مكاني\nمساعدة | أول حرف: س | آخر حرف: ي | عدد الحروف: 6", correctAnswer: "سريرتي" },
+            { text: "أكمل البيت الشعري:\nواقطع به طمعي وشرف ...\nكثر به ورعي واحي جناني\nمساعدة | أول حرف: ه | آخر حرف: ي | عدد الحروف: 4", correctAnswer: "همتي" },
+            { text: "أكمل البيت الشعري:\nأسهر به ليلي وأظم ...\nأسبل بفيض دموعها أجفاني\nمساعدة | أول حرف: ج | آخر حرف: ي | عدد الحروف: 6", correctAnswer: "جوارحي" },
+            { text: "أكمل البيت الشعري:\nأمزجه يا رب ... مع دمي\nواغسل به قلبي من الأضغان\nمساعدة | أول حرف: ب | آخر حرف: ي | عدد الحروف: 5", correctAnswer: "بلحمي" },
+            { text: "أكمل البيت الشعري:\nولأكسون عيوب نفسي بالتقى\nولأقبضن عن الفجور ...\nمساعدة | أول حرف: ع | آخر حرف: ي | عدد الحروف: 5", correctAnswer: "عناني" },
+            { text: "أكمل البيت الشعري:\nولأمنعن النفس عن شهواتها\nولأجعلن ... من أعواني\nمساعدة | أول حرف: ا | آخر حرف: د | عدد الحروف: 4", correctAnswer: "الزهد" },
+            { text: "أكمل البيت الشعري:\nولأتلون حروف وحيك في الدجى\nولأحرقن بنوره ...\nمساعدة | أول حرف: ش | آخر حرف: ي | عدد الحروف: 7", correctAnswer: "شيطاني" },
+            { text: "أكمل البيت الشعري:\nنادى بصوت حين كلم عبده\nموسى فأسمعه بلا ...\nمساعدة | أول حرف: ك | آخر حرف: م | عدد الحروف: 5", correctAnswer: "كتمان" },
+            { text: "أكمل البيت الشعري:\nلا تجزعن إذا دهتك مصيبة\nإن الصبور ثوابه ...\nمساعدة | أول حرف: ض | آخر حرف: ف | عدد الحروف: 6", correctAnswer: "ضعفان" },
+            { text: "أكمل البيت الشعري:\nفإذا ابتليت بنكبة فاصبر لها\nالله حسبي وحده ...\nمساعدة | أول حرف: ك | آخر حرف: ي | عدد الحروف: 5", correctAnswer: "كفاني" },
+            { text: "أكمل البيت الشعري:\nإذا ابتليت بعسرة فاصبر لها\nفالعسر فرد بعده ...\nمساعدة | أول حرف: ي | آخر حرف: ن | عدد الحروف: 5", correctAnswer: "يسران" },
+            { text: "أكمل البيت الشعري:\nلا تشغلن بعيب غيرك غافلا\nعن عيب نفسك إنه ...\nمساعدة | أول حرف: ع | آخر حرف: ن | عدد الحروف: 5", correctAnswer: "عيبان" },
+            { text: "أكمل البيت الشعري:\nكن حلس بيتك إن سمعت بفتنة\nوتوق كل منافق ...\nمساعدة | أول حرف: ف | آخر حرف: ن | عدد الحروف: 4", correctAnswer: "فتان" },
+            { text: "أكمل بيت المتنبي:\nعلى قدر أهل العزم تأتي العزائم\nوتأتي على قدر ... المكارم\nمساعدة | أول حرف: ا | آخر حرف: م | عدد الحروف: 5", correctAnswer: "الكرام" },
+            { text: "أكمل بيت المتنبي:\nوتعظم في عين الصغير صغارها\nوتصغر في عين ... الكبير الكبار\nمساعدة | أول حرف: ا | آخر حرف: م | عدد الحروف: 6", correctAnswer: "العظيم" },
+            { text: "أكمل بيت المتنبي:\nإذا غامرت في شرف مروم\nفلا تقنع بما دون ...\nمساعدة | أول حرف: ا | آخر حرف: م | عدد الحروف: 6", correctAnswer: "النجوم" },
+            { text: "أكمل بيت المتنبي:\nومن يك ذا فم مر مريض\nيجد مرا به ... الزلال\nمساعدة | أول حرف: ا | آخر حرف: ء | عدد الحروف: 3", correctAnswer: "الما" },
+            { text: "أكمل بيت أبي الطيب المتنبي:\nالخيل والليل والبيداء تعرفني\nوالسيف والرمح والقرطاس ...\nمساعدة | أول حرف: و | آخر حرف: م | عدد الحروف: 7", correctAnswer: "والقلم" },
+            { text: "أكمل بيت المتنبي:\nإذا رأيت نيوب الليث بارزة\nفلا تظنن أن الليث ...\nمساعدة | أول حرف: ي | آخر حرف: م | عدد الحروف: 6", correctAnswer: "يبتسم" },
+            { text: "أكمل بيت أبي تمام:\nالسيف أصدق أنباء من ...\nفي حده الحد بين الجد واللعب\nمساعدة | أول حرف: ا | آخر حرف: ب | عدد الحروف: 5", correctAnswer: "الكتب" },
+            { text: "أكمل بيت أحمد شوقي:\nقم للمعلم وفه التبجيلا\nكاد المعلم أن يكون ...\nمساعدة | أول حرف: ر | آخر حرف: لا | عدد الحروف: 6", correctAnswer: "رسولا" },
+            { text: "أكمل بيت أحمد شوقي:\nوطني لو شغلت بالخلد عنه\nنازعتني إليه في الخلد ...\nمساعدة | أول حرف: ن | آخر حرف: ي | عدد الحروف: 5", correctAnswer: "نفسي" },
+            { text: "أكمل بيت المتنبي المشهور:\nأنام ملء جفوني عن شواردها\nويسهر الخلق ...\nمساعدة | أول حرف: ج | آخر حرف: ي | عدد الحروف: 6", correctAnswer: "جراها" },
+            { text: "أكمل بيت الإمام الشافعي:\nدعِ الأيامَ تفعلُ ما تشاءُ\nوطِبْ نفساً إذا حكم ...\nمساعدة | أول حرف: ا | آخر حرف: ء | عدد الحروف: 6", correctAnswer: "القضاء" },
+            { text: "أكمل بيت الإمام الشافعي:\nولا تجزع لحادثة الليالي\nفما لحوادث الدنيا ...\nمساعدة | أول حرف: ب | آخر حرف: ء | عدد الحروف: 5", correctAnswer: "بقاء" },
+            { text: "أكمل بيت الإمام الشافعي:\nإذا كان قلبي على أنسه\nليأنس بالذكر ذاك ...\nمساعدة | أول حرف: ا | آخر حرف: ن | عدد الحروف: 6", correctAnswer: "الإحسان" },
+            { text: "أكمل بيت لأبي العتاهية:\nإذا المرء لم يدنس من اللؤم عرضه\nفكل رداء ...\nمساعدة | أول حرف: ي | آخر حرف: ه | عدد الحروف: 6", correctAnswer: "يرتديه" },
+            { text: "أكمل بيت عنترة بن شداد:\nولقد ذكرتك والرماح نواهل\nمني وبيض الهند ...\nمساعدة | أول حرف: ت | آخر حرف: ي | عدد الحروف: 5", correctAnswer: "تقطر" }
+        ]
     }
 };
 
@@ -328,10 +366,14 @@ let state = {
     // نظام المسابقة: 'manual' (يدوي) أو 'auto' (تلقائي)
     competitionMode: 'auto',
 
+    // نظام التوقيت: 'speed' (سريع) أو 'time' (وقت)
+    timingMode: 'time',
+
     // المجموعات
     teamMode: false,
     registrationOpen: false,
     teams: { م1: [], م2: [] },
+    manualTeamPoints: { م1: 0, م2: 0 }, // نقاط إضافية يدوية من الأدمن (➕/➖) تُضاف لنتيجة المسابقة الحالية
 
     // السحب العشوائي
     drawMode: false,
@@ -340,6 +382,7 @@ let state = {
 
     // إعداد المسابقة الحالية
     competitionActive: false,
+    competitionPaused: false,
     competitionSelectedSections: [], // [{ source: 'bank'|'custom', name: '...' }]
     competitionDuration: null,
     competitionTotalQuestions: null,
@@ -347,20 +390,23 @@ let state = {
     competitionQueue: [], // [{ source, sectionName, questionIndex }] مخلوطة بلا تكرار حتى انتهاء العدد المطلوب
 
     // السؤال الحالي
-    currentQuestion: null,       // { text, type, choices? }
+    currentQuestion: null,       // { text, choices? }
     currentCorrectAnswer: null,  // { text } أو { choices, correctIndex }
     roundActive: false,
     roundStartTime: null,
-    waitingForNext: false,       // بعد انتهاء وقت السؤال، بانتظار "التالي" (يدوي) أو الانتقال التلقائي
+    roundEndsAt: null,           // الوقت المتوقع لانتهاء الجولة (يُعاد حسابه عند تفعيل السرعة)
+    waitingForNext: false,       // بعد انتهاء وقت السؤال: تُعرض شاشة الإجابة الصحيحة
+    showingAnswerReveal: false,  // true أثناء عرض "الإجابة الصحيحة + أصحاب الإجابات" (5 ثوانٍ بالتلقائي أو حتى ضغط الأدمن باليدوي)
+    speedTriggered: false,       // في النظام السريع: هل تم بالفعل تقليص الوقت بعد أول إجابة صحيحة لهذا السؤال
 
     // نتائج المسابقة الحالية فقط (تُصفَّر مع كل مسابقة جديدة)
-    correctAnswersThisQuestion: [], // [{ name, team, time }] بترتيب الوصول لهذا السؤال فقط
-    competitionResults: {},         // { name: { count, team, firstAnswerTime, totalAnswerSpeedSum } } لكل المسابقة الحالية
+    correctAnswersThisQuestion: [], // [{ name, team, timeSeconds }] بترتيب الوصول لهذا السؤال فقط، بالثواني من بداية السؤال
+    competitionResults: {},         // { name: { count, team, firstAnswerTime, totalAnswerTimeMs } } لكل المسابقة الحالية
     competitionFinished: false,
     competitionFinalRanking: []     // تُحسب عند انتهاء المسابقة: [{ name, count, team, medal }]
 };
 
-let questionTimer = null;
+let questionTimer = null;      // مؤقت انتهاء وقت السؤال أو مؤقت شاشة الإجابة الصحيحة (5 ثوانٍ)
 
 // ==================== أدوات مساعدة: مطابقة الإجابات ====================
 function normalizeAnswer(str) {
@@ -419,6 +465,14 @@ function isChoiceCorrect(userComment, choices, correctIndex) {
     const userAnswer = normalizeAnswer(userComment);
     if (!userAnswer) return false;
 
+    // الصيغة المطلوبة: "خ" متبوعة برقم الخيار (خ1، خ2، خ3، خ4)
+    // خ تتحول لـ "ح" أحياناً عبر الكيبورد أو تبقى كما هي؛ نقبل "خ" فقط كما طُلب، مع تجاهل مسافة محتملة بينها وبين الرقم
+    const khMatch = userAnswer.match(/^خ\s*([1-4])$/);
+    if (khMatch) {
+        return (parseInt(khMatch[1], 10) - 1) === correctIndex;
+    }
+
+    // قبول الرقم المجرد أيضاً كصيغة احتياطية
     const numMatch = userAnswer.match(/^([1-4])$/);
     if (numMatch) {
         return (parseInt(numMatch[1], 10) - 1) === correctIndex;
@@ -449,6 +503,8 @@ function getCurrentCompetitionRanking() {
         Object.values(state.competitionResults).forEach(r => {
             if (r.team) teamCounts[r.team] += r.count;
         });
+        teamCounts['م1'] += state.manualTeamPoints['م1'] || 0;
+        teamCounts['م2'] += state.manualTeamPoints['م2'] || 0;
         return { teamMode: true, teamCounts };
     } else {
         const sorted = Object.entries(state.competitionResults)
@@ -508,24 +564,28 @@ function buildQuestionQueue(selectedSections, totalQuestions) {
     return pool.slice(0, Math.min(totalQuestions, pool.length));
 }
 
-function startCompetition(selectedSections, duration, totalQuestions) {
+function startCompetition(selectedSections, duration, totalQuestions, timingMode) {
     if (!selectedSections || selectedSections.length === 0) return false;
 
     const queue = buildQuestionQueue(selectedSections, totalQuestions);
     if (queue.length === 0) return false;
 
     state.competitionActive = true;
+    state.competitionPaused = false;
     state.competitionSelectedSections = selectedSections;
     state.competitionDuration = duration;
+    state.timingMode = timingMode === 'speed' ? 'speed' : 'time';
     state.competitionTotalQuestions = queue.length;
     state.competitionAskedCount = 0;
     state.competitionQueue = queue;
     state.competitionResults = {};
+    state.manualTeamPoints = { م1: 0, م2: 0 };
     state.competitionFinished = false;
     state.competitionFinalRanking = [];
     state.currentQuestion = null;
     state.roundActive = false;
     state.waitingForNext = false;
+    state.showingAnswerReveal = false;
 
     broadcastState();
     askNextQuestion();
@@ -549,6 +609,8 @@ function askNextQuestion() {
     state.roundStartTime = Date.now();
     state.roundActive = true;
     state.waitingForNext = false;
+    state.showingAnswerReveal = false;
+    state.speedTriggered = false;
 
     if (item.type === 'choices') {
         state.currentQuestion = { text: q.text, choices: q.choices, sectionName: item.sectionName };
@@ -562,19 +624,25 @@ function askNextQuestion() {
     broadcastCurrentRanking();
 
     questionTimer = setTimeout(() => {
-        onQuestionTimeUp();
+        revealAnswer();
     }, state.competitionDuration * 1000);
 }
 
-function onQuestionTimeUp() {
+// تُستدعى عند انتهاء وقت السؤال الطبيعي، أو عند انتهاء مهلة الـ5 ثوانٍ بعد أول إجابة صحيحة في النظام السريع
+function revealAnswer() {
+    if (questionTimer) { clearTimeout(questionTimer); questionTimer = null; }
+
     state.roundActive = false;
     state.waitingForNext = true;
+    state.showingAnswerReveal = true;
     broadcastState();
 
     if (state.competitionMode === 'auto') {
-        questionTimer = setTimeout(askNextQuestion, 2500);
+        questionTimer = setTimeout(() => {
+            askNextQuestion();
+        }, 5000);
     }
-    // في الوضع اليدوي: ننتظر ضغط الأدمن على "السؤال التالي" (حدث nextQuestionManually)
+    // في الوضع اليدوي: تبقى شاشة الإجابة ظاهرة حتى ضغط الأدمن على "السؤال التالي"
 }
 
 function finishCompetition() {
@@ -582,10 +650,11 @@ function finishCompetition() {
     state.competitionFinished = true;
     state.roundActive = false;
     state.waitingForNext = false;
+    state.showingAnswerReveal = false;
     state.currentQuestion = null;
     if (questionTimer) { clearTimeout(questionTimer); questionTimer = null; }
 
-    // بناء الترتيب النهائي: عدد الإجابات الصحيحة تنازلياً، وعند التعادل الأسرع (مجموع/متوسط سرعة الإجابة) يتقدم
+    // بناء الترتيب النهائي: عدد الإجابات الصحيحة تنازلياً، وعند التعادل الأسرع (متوسط سرعة الإجابة) يتقدم
     const ranking = Object.entries(state.competitionResults)
         .map(([name, r]) => ({
             name,
@@ -615,14 +684,52 @@ function nextQuestionManually() {
 
 function stopCompetitionManually() {
     state.competitionActive = false;
+    state.competitionPaused = false;
     state.competitionFinished = false;
     state.roundActive = false;
     state.waitingForNext = false;
+    state.showingAnswerReveal = false;
     state.currentQuestion = null;
     state.competitionSelectedSections = [];
     state.competitionQueue = [];
     if (questionTimer) { clearTimeout(questionTimer); questionTimer = null; }
     broadcastState();
+}
+
+// إيقاف مؤقت: يجمّد المؤقت الحالي بحفظ الوقت المتبقي، بلا إنهاء المسابقة
+let pausedRemainingMs = null;
+function pauseCompetition() {
+    if (!state.competitionActive || state.competitionPaused) return;
+    if (state.roundActive && questionTimer) {
+        const elapsed = Date.now() - state.roundStartTime;
+        pausedRemainingMs = Math.max(0, state.competitionDuration * 1000 - elapsed);
+        clearTimeout(questionTimer);
+        questionTimer = null;
+    }
+    state.competitionPaused = true;
+    broadcastState();
+}
+
+function resumeCompetition() {
+    if (!state.competitionActive || !state.competitionPaused) return;
+    state.competitionPaused = false;
+
+    if (state.roundActive && pausedRemainingMs !== null) {
+        // إعادة ضبط وقت البداية بحيث يبقى العداد المعروض متوافقاً مع الوقت المتبقي الفعلي
+        state.roundStartTime = Date.now() - (state.competitionDuration * 1000 - pausedRemainingMs);
+        questionTimer = setTimeout(() => {
+            revealAnswer();
+        }, pausedRemainingMs);
+        pausedRemainingMs = null;
+    }
+    broadcastState();
+}
+
+function adjustManualTeamPoints(team, delta) {
+    if (team !== 'م1' && team !== 'م2') return;
+    state.manualTeamPoints[team] = Math.max(0, (state.manualTeamPoints[team] || 0) + delta);
+    broadcastState();
+    broadcastCurrentRanking();
 }
 
 // ==================== منطق الاتصال بلوحة التحكم (Socket.io) ====================
@@ -719,8 +826,8 @@ io.on('connection', (socket) => {
 
     // ---- المسابقة ----
     socket.on('startCompetition', (payload) => {
-        // payload: { sections: [{source, name}], duration, totalQuestions }
-        startCompetition(payload.sections, payload.duration, payload.totalQuestions);
+        // payload: { sections: [{source, name}], duration, totalQuestions, timingMode: 'speed'|'time' }
+        startCompetition(payload.sections, payload.duration, payload.totalQuestions, payload.timingMode);
     });
 
     socket.on('nextQuestionManually', () => {
@@ -729,6 +836,19 @@ io.on('connection', (socket) => {
 
     socket.on('stopCompetition', () => {
         stopCompetitionManually();
+    });
+
+    socket.on('pauseCompetition', () => {
+        pauseCompetition();
+    });
+
+    socket.on('resumeCompetition', () => {
+        resumeCompetition();
+    });
+
+    socket.on('adjustManualTeamPoints', (payload) => {
+        // payload: { team: 'م1'|'م2', delta: 1 أو -1 }
+        adjustManualTeamPoints(payload.team, payload.delta);
     });
 
     socket.on('dismissFinalResults', () => {
@@ -804,7 +924,7 @@ tiktokConnection.on('chat', (data) => {
         return;
     }
 
-    if (state.roundActive && state.currentQuestion && state.currentCorrectAnswer) {
+    if (state.roundActive && state.currentQuestion && state.currentCorrectAnswer && !state.competitionPaused) {
         const team = getPlayerTeam(nickname);
         if (state.teamMode && !team) return;
 
@@ -834,6 +954,21 @@ tiktokConnection.on('chat', (data) => {
 
             io.emit('newCorrectAnswer', { name: nickname, team: team || null, order: state.correctAnswersThisQuestion.length });
             broadcastCurrentRanking();
+
+            // النظام السريع: أول إجابة صحيحة تقلّص الوقت المتبقي إلى 5 ثوانٍ (فقط إذا كان المتبقي أكثر من 5)
+            if (state.timingMode === 'speed' && !state.speedTriggered) {
+                state.speedTriggered = true;
+                const elapsedMs = Date.now() - state.roundStartTime;
+                const totalMs = state.competitionDuration * 1000;
+                const remainingMs = totalMs - elapsedMs;
+
+                if (remainingMs > 5000) {
+                    if (questionTimer) { clearTimeout(questionTimer); questionTimer = null; }
+                    questionTimer = setTimeout(() => {
+                        revealAnswer();
+                    }, 5000);
+                }
+            }
         }
     }
 });
