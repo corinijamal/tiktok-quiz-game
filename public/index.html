@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>مسابقات أحمد </title>
+<title>مسابقات أحمد - لوحة التحكم</title>
 <script src="/socket.io/socket.io.js"></script>
 <style>
     :root {
@@ -152,6 +152,36 @@
     .current-ranking .item .ord { color: var(--gold); font-weight: bold; margin-left: 6px; }
     .current-ranking .item .cnt { color: var(--olive); font-weight: bold; }
 
+    /* شاشة الإجابة الصحيحة بعد كل سؤال */
+    .answer-reveal { text-align: center; padding: 10px 0 20px; }
+    .answer-reveal .reveal-label { color: var(--text-dim); font-size: 14px; margin-bottom: 6px; }
+    .answer-reveal .reveal-answer { color: var(--gold); font-size: 26px; font-weight: bold; margin-bottom: 18px; }
+    .answer-reveal .reveal-sub { color: var(--olive); font-size: 15px; font-weight: bold; margin-bottom: 8px; }
+    .answerers-scroll {
+        max-height: 140px; overflow-y: auto; max-width: 380px; margin: 0 auto;
+        border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2);
+    }
+    .answerers-scroll .a-item {
+        display: flex; justify-content: space-between; padding: 8px 14px; font-size: 14px; border-bottom: 1px solid var(--border);
+    }
+    .answerers-scroll .a-item:last-child { border-bottom: none; }
+    .answerers-scroll .a-time { color: var(--gold); font-weight: bold; }
+    .next-auto-hint { color: var(--text-dim); font-size: 13px; margin-top: 10px; }
+
+    /* مربعات نقاط الفريق اليدوية */
+    .team-points-box { display: flex; gap: 12px; max-width: 400px; margin: 16px auto 0; }
+    .team-points-box .team-box {
+        flex: 1; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; text-align: center;
+    }
+    .team-points-box .team-box .t-name { font-size: 13px; color: var(--text-dim); margin-bottom: 4px; }
+    .team-points-box .team-box .t-val { font-size: 24px; font-weight: bold; color: var(--gold); margin-bottom: 8px; }
+    .team-points-box .team-box .t-controls { display: flex; gap: 8px; justify-content: center; }
+    .team-points-box .team-box .t-btn {
+        width: 34px; height: 34px; border-radius: 8px; border: none; font-size: 18px; font-weight: bold; cursor: pointer;
+    }
+    .t-btn.plus { background: var(--green); color: white; }
+    .t-btn.minus { background: var(--red); color: white; }
+
     .final-result { text-align: center; padding: 20px; }
     .final-result h2 { color: var(--gold); font-size: 26px; }
     .podium-list { max-width: 450px; margin: 16px auto; text-align: right; }
@@ -236,7 +266,7 @@
                     يدوي: يظهر زر "السؤال التالي" بعد كل سؤال. تلقائي: ينتقل تلقائياً بعد لحظات.
                 </p>
 
-                <h3 style="margin-top:28px;">🏆 قائمة المتصدرين </h3>
+                <h3 style="margin-top:28px;">🏆 قائمة المتصدرين (سجل تاريخي دائم)</h3>
                 <div class="row" style="justify-content:space-between;">
                     <span style="color:var(--text-dim); font-size:12px;">مجموع كل الأوقات لكل المسابقات</span>
                     <button class="btn btn-danger btn-sm" onclick="askClearHistoricalLeaderboard()">🗑️</button>
@@ -345,6 +375,15 @@
                     <button class="btn btn-outline" id="setupModeTeamBtn" onclick="chooseParticipationMode(true)">مجموعات</button>
                 </div>
 
+                <label>نظام المسابقة</label>
+                <div class="row">
+                    <button class="btn btn-outline" id="timingModeSpeedBtn" onclick="chooseTimingMode('speed')">سريع</button>
+                    <button class="btn btn-outline btn-primary" id="timingModeTimeBtn" onclick="chooseTimingMode('time')">وقت</button>
+                </div>
+                <p style="color:var(--text-dim); font-size:12px; margin-top:6px;">
+                    سريع: بعد أول إجابة صحيحة يُقلَّص وقت السؤال إلى 5 ثوانٍ. وقت: يبقى السؤال حتى نهاية المدة المحددة دائماً.
+                </p>
+
                 <!-- تظهر فور اختيار فردي -->
                 <footer class="controls-fixed" id="individualStartFooter" style="display:none;">
                     <button class="btn btn-primary btn-block" onclick="launchCompetition()">🚀 بدء المسابقة</button>
@@ -384,21 +423,50 @@
                     <div class="meta-line" id="liveSectionsNames"></div>
                     <div class="meta-line" id="liveProgress"></div>
 
-                    <div id="liveTimerBox" style="display:none;">
-                        <div class="timer" id="liveTimer">--</div>
+                    <!-- تظهر أثناء عرض السؤال فقط -->
+                    <div id="questionActiveBox">
+                        <div id="liveTimerBox" style="display:none;">
+                            <div class="timer" id="liveTimer">--</div>
+                        </div>
+                        <div class="question-text" id="liveQuestionText"></div>
+                        <div class="choices-grid" id="liveChoicesGrid" style="display:none;"></div>
                     </div>
 
-                    <div class="question-text" id="liveQuestionText"></div>
+                    <!-- تظهر بعد انتهاء السؤال: الإجابة الصحيحة + أصحاب الإجابات -->
+                    <div id="answerRevealBox" class="answer-reveal" style="display:none;">
+                        <div class="reveal-label">الإجابة الصحيحة هي:</div>
+                        <div class="reveal-answer" id="revealAnswerText"></div>
+                        <div class="reveal-sub">أصحاب الإجابات الصحيحة</div>
+                        <div class="answerers-scroll" id="answerersScroll"></div>
+                        <div class="next-auto-hint" id="nextAutoHint" style="display:none;">⏳ السؤال التالي بعد لحظات...</div>
+                        <button class="btn btn-gold" id="nextQuestionBtn" style="display:none; margin-top:12px;" onclick="nextQuestionManually()">➡️ السؤال التالي</button>
 
-                    <div class="choices-grid" id="liveChoicesGrid" style="display:none;"></div>
-
-                    <div id="liveWaitingNext" class="status-line" style="display:none;">⏳ السؤال التالي بعد لحظات...</div>
-                    <button class="btn btn-gold" id="nextQuestionBtn" style="display:none; margin-top:12px;" onclick="nextQuestionManually()">➡️ السؤال التالي</button>
+                        <!-- نقاط الفريق اليدوية (تظهر فقط في وضع المجموعات) -->
+                        <div class="team-points-box" id="teamPointsBox" style="display:none;">
+                            <div class="team-box">
+                                <div class="t-name">م1 - شباب</div>
+                                <div class="t-val" id="team1PointsVal">0</div>
+                                <div class="t-controls">
+                                    <button class="t-btn minus" onclick="adjustTeamPoints('م1', -1)">−</button>
+                                    <button class="t-btn plus" onclick="adjustTeamPoints('م1', 1)">+</button>
+                                </div>
+                            </div>
+                            <div class="team-box">
+                                <div class="t-name">م2 - بنات</div>
+                                <div class="t-val" id="team2PointsVal">0</div>
+                                <div class="t-controls">
+                                    <button class="t-btn minus" onclick="adjustTeamPoints('م2', -1)">−</button>
+                                    <button class="t-btn plus" onclick="adjustTeamPoints('م2', 1)">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="current-ranking" id="currentRankingBox"></div>
                 </div>
 
                 <footer class="controls-fixed">
+                    <button class="btn btn-outline" id="pauseResumeBtn" onclick="togglePauseResume()">⏸️ إيقاف مؤقت</button>
                     <button class="btn btn-danger" onclick="if(confirm('هل تريد إيقاف المسابقة؟')) stopCompetition()">⏹️ إيقاف المسابقة</button>
                 </footer>
             </div>
@@ -465,6 +533,7 @@
     let selectedSectionsForComp = [];
     let qnaDuration = 20;
     let questionCount = 10;
+    let selectedTimingMode = 'time';
     let liveCountdownInterval = null;
 
     // ---- حالة الاتصال ----
@@ -665,6 +734,7 @@
         document.getElementById('teamRegistrationSetupBox').style.display = 'none';
         document.getElementById('setupModeIndividualBtn').classList.remove('btn-primary');
         document.getElementById('setupModeTeamBtn').classList.remove('btn-primary');
+        chooseTimingMode('time');
         renderSectionSelectBoxes();
         showQnaScreen('createCompScreen');
     }
@@ -737,17 +807,36 @@
         document.getElementById('teamRegistrationSetupBox').style.display = isTeam ? 'block' : 'none';
     }
 
+    function chooseTimingMode(mode) {
+        selectedTimingMode = mode;
+        document.getElementById('timingModeSpeedBtn').classList.toggle('btn-primary', mode === 'speed');
+        document.getElementById('timingModeTimeBtn').classList.toggle('btn-primary', mode === 'time');
+    }
+
     function launchCompetition() {
         if (selectedSectionsForComp.length === 0) { alert('يرجى اختيار قسم واحد على الأقل'); return; }
         socket.emit('startCompetition', {
             sections: selectedSectionsForComp,
             duration: qnaDuration,
-            totalQuestions: questionCount
+            totalQuestions: questionCount,
+            timingMode: selectedTimingMode
         });
     }
 
     function nextQuestionManually() { socket.emit('nextQuestionManually'); }
     function stopCompetition() { socket.emit('stopCompetition'); }
+
+    function togglePauseResume() {
+        if (currentState && currentState.competitionPaused) {
+            socket.emit('resumeCompetition');
+        } else {
+            socket.emit('pauseCompetition');
+        }
+    }
+
+    function adjustTeamPoints(team, delta) {
+        socket.emit('adjustManualTeamPoints', { team, delta });
+    }
 
     function dismissFinalResults() {
         socket.emit('dismissFinalResults');
@@ -862,16 +951,24 @@
         document.getElementById('liveSectionsNames').innerText = 'الأقسام: ' + sectionsNames;
         document.getElementById('liveProgress').innerText = `السؤال ${currentState.competitionAskedCount} من ${currentState.competitionTotalQuestions}`;
 
+        // زر الإيقاف المؤقت / الاستئناف
+        const pauseBtn = document.getElementById('pauseResumeBtn');
+        pauseBtn.innerText = currentState.competitionPaused ? '▶️ استئناف' : '⏸️ إيقاف مؤقت';
+
         const q = currentState.currentQuestion;
+        const questionBox = document.getElementById('questionActiveBox');
+        const revealBox = document.getElementById('answerRevealBox');
         const timerBox = document.getElementById('liveTimerBox');
-        const waitingBox = document.getElementById('liveWaitingNext');
         const nextBtn = document.getElementById('nextQuestionBtn');
+        const nextAutoHint = document.getElementById('nextAutoHint');
         const choicesGrid = document.getElementById('liveChoicesGrid');
 
-        if (currentState.roundActive && q) {
+        if (currentState.roundActive && q && !currentState.showingAnswerReveal) {
+            // ---- عرض السؤال الحالي ----
+            questionBox.style.display = 'block';
+            revealBox.style.display = 'none';
+
             document.getElementById('liveQuestionText').innerText = q.text;
-            waitingBox.style.display = 'none';
-            nextBtn.style.display = 'none';
             timerBox.style.display = 'block';
 
             if (q.choices) {
@@ -885,16 +982,41 @@
             }
 
             startLiveCountdown();
-        } else if (currentState.waitingForNext) {
-            timerBox.style.display = 'none';
+        } else if (currentState.showingAnswerReveal) {
+            // ---- عرض شاشة الإجابة الصحيحة ----
+            questionBox.style.display = 'none';
+            revealBox.style.display = 'block';
             stopLiveCountdown();
 
+            const correctAns = currentState.currentCorrectAnswer;
+            let answerText = '';
+            if (correctAns) {
+                answerText = correctAns.choices ? correctAns.choices[correctAns.correctIndex] : correctAns.text;
+            }
+            document.getElementById('revealAnswerText').innerText = answerText;
+
+            const answerers = (currentState.correctAnswersThisQuestion || []);
+            const scrollBox = document.getElementById('answerersScroll');
+            scrollBox.innerHTML = answerers.map(a => `
+                <div class="a-item"><span>${a.name}</span><span class="a-time">${(a.time / 1000).toFixed(1)} ثانية</span></div>
+            `).join('') || '<div class="a-item" style="color:var(--text-dim);">لا يوجد إجابات صحيحة</div>';
+
             if (currentState.competitionMode === 'manual') {
-                waitingBox.style.display = 'none';
+                nextAutoHint.style.display = 'none';
                 nextBtn.style.display = 'inline-block';
             } else {
-                waitingBox.style.display = 'block';
+                nextAutoHint.style.display = 'block';
                 nextBtn.style.display = 'none';
+            }
+
+            // نقاط الفريق اليدوية (وضع المجموعات فقط)
+            const teamPointsBox = document.getElementById('teamPointsBox');
+            if (currentState.teamMode) {
+                teamPointsBox.style.display = 'flex';
+                document.getElementById('team1PointsVal').innerText = currentState.manualTeamPoints['م1'] || 0;
+                document.getElementById('team2PointsVal').innerText = currentState.manualTeamPoints['م2'] || 0;
+            } else {
+                teamPointsBox.style.display = 'none';
             }
         }
     }
