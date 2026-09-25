@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>مسابقات أحمد - لوحة التحكم</title>
+<title>مسابقات كوريني - لوحة التحكم</title>
 <meta name="theme-color" content="#1c1f15">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -378,8 +378,8 @@
 
 <header>
     <div class="brand">
-        <h1>🏆 مسابقات أحمد</h1>
-        <div class="stream-id">a_7_m_d2</div>
+        <h1>🏆 مسابقات كوريني</h1>
+        <div class="stream-id" id="headerUsername">غير مسجل الدخول</div>
     </div>
     <div id="connStatus" class="status-line">جاري الاتصال...</div>
 </header>
@@ -396,27 +396,54 @@
         <div class="panel active" id="panel-settings">
 
             <div id="settingsHome">
-                <h3>إدارة الأقسام الخاصة</h3>
-                <div class="row">
-                    <button class="btn btn-primary" onclick="showAddSectionScreen()">➕ إضافة قسم</button>
-                    <button class="btn btn-outline" onclick="showEditSectionsScreen()">✏️ تعديل قسم</button>
+                <div id="loginBox">
+                    <h3>🔐 تسجيل الدخول</h3>
+                    <p style="color:var(--text-dim); font-size:12px;">
+                        أدخل اسم مستخدم TikTok ومفتاح الإدارة الخاص بهذا الحساب. أول تسجيل دخول بحساب جديد
+                        يُنشئ له مفتاحاً بالضبط بالكلمة التي تدخلها الآن — احتفظ بها لاستخدامها لاحقاً.
+                        كل حساب يملك بثه وأسئلته الخاصة وسجله المستقل تماماً عن باقي الحسابات.
+                    </p>
+                    <div id="loginForm">
+                        <label>اسم مستخدم TikTok (بدون @)</label>
+                        <input type="text" id="loginUsername" placeholder="مثال: a_7_m_d2">
+                        <label>مفتاح الإدارة</label>
+                        <input type="text" id="loginAdminKey" placeholder="كلمة سر خاصة بهذا الحساب">
+                        <div id="loginError" style="color:var(--red); font-size:13px; margin-top:8px; display:none;"></div>
+                        <footer class="controls-fixed">
+                            <button class="btn btn-primary btn-block" onclick="doLogin()">دخول</button>
+                        </footer>
+                    </div>
+                    <div id="loggedInBox" style="display:none;">
+                        <div class="status-line live">مسجَّل الدخول بحساب: <strong id="loggedInUsername"></strong></div>
+                        <footer class="controls-fixed">
+                            <button class="btn btn-outline" onclick="doLogout()">🚪 تسجيل خروج</button>
+                        </footer>
+                    </div>
                 </div>
 
-                <h3 style="margin-top:28px;">نظام المسابقة</h3>
-                <div class="row">
-                    <button class="btn btn-outline" id="compModeManualBtn" onclick="setCompetitionMode('manual')">يدوي</button>
-                    <button class="btn btn-outline" id="compModeAutoBtn" onclick="setCompetitionMode('auto')">تلقائي</button>
-                </div>
-                <p style="color:var(--text-dim); font-size:12px; margin-top:8px;">
-                    يدوي: يظهر زر "السؤال التالي" بعد كل سؤال. تلقائي: ينتقل تلقائياً بعد لحظات.
-                </p>
+                <div id="settingsMainContent" style="display:none;">
+                    <h3 style="margin-top:28px;">إدارة الأقسام الخاصة</h3>
+                    <div class="row">
+                        <button class="btn btn-primary" onclick="showAddSectionScreen()">➕ إضافة قسم</button>
+                        <button class="btn btn-outline" onclick="showEditSectionsScreen()">✏️ تعديل قسم</button>
+                    </div>
 
-                <h3 style="margin-top:28px;">🏆 قائمة المتصدرين (سجل تاريخي دائم)</h3>
-                <div class="row" style="justify-content:space-between;">
-                    <span style="color:var(--text-dim); font-size:12px;">مجموع كل الأوقات لكل المسابقات</span>
-                    <button class="btn btn-danger btn-sm" onclick="askClearHistoricalLeaderboard()">🗑️</button>
+                    <h3 style="margin-top:28px;">نظام المسابقة</h3>
+                    <div class="row">
+                        <button class="btn btn-outline" id="compModeManualBtn" onclick="setCompetitionMode('manual')">يدوي</button>
+                        <button class="btn btn-outline" id="compModeAutoBtn" onclick="setCompetitionMode('auto')">تلقائي</button>
+                    </div>
+                    <p style="color:var(--text-dim); font-size:12px; margin-top:8px;">
+                        يدوي: يظهر زر "السؤال التالي" بعد كل سؤال. تلقائي: ينتقل تلقائياً بعد لحظات.
+                    </p>
+
+                    <h3 style="margin-top:28px;">🏆 قائمة المتصدرين (سجل تاريخي دائم)</h3>
+                    <div class="row" style="justify-content:space-between;">
+                        <span style="color:var(--text-dim); font-size:12px;">مجموع كل الأوقات لكل المسابقات</span>
+                        <button class="btn btn-danger btn-sm" onclick="askClearHistoricalLeaderboard()">🗑️</button>
+                    </div>
+                    <div id="historicalLeaderboardBox" style="margin-top:10px;"></div>
                 </div>
-                <div id="historicalLeaderboardBox" style="margin-top:10px;"></div>
             </div>
 
             <!-- شاشة: إضافة قسم جديد -->
@@ -479,8 +506,12 @@
         <!-- ===================== تبويب أسئلة وأجوبة ===================== -->
         <div class="panel" id="panel-qna">
 
+            <div class="login-required-hint" id="qnaLoginHint">
+                <p class="empty-hint">🔒 يرجى تسجيل الدخول أولاً من تبويب "الإعدادات"</p>
+            </div>
+
             <!-- الشاشة الرئيسية: زر إنشاء مسابقة -->
-            <div id="qnaHome">
+            <div id="qnaHome" style="display:none;">
                 <button class="btn btn-primary btn-block" onclick="showCreateCompetitionScreen()" style="padding:16px; font-size:16px;">🚀 إنشاء مسابقة</button>
             </div>
 
@@ -632,18 +663,23 @@
 
         <!-- ===================== تبويب سحب عشوائي ===================== -->
         <div class="panel" id="panel-draw">
-            <h3>سحب عشوائي</h3>
-            <label>الكلمة المفتاحية للمشاركة</label>
-            <input type="text" id="drawKeyword" placeholder="مثال: انضم">
+            <div class="login-required-hint" id="drawLoginHint">
+                <p class="empty-hint">🔒 يرجى تسجيل الدخول أولاً من تبويب "الإعدادات"</p>
+            </div>
+            <div id="drawMainContent" style="display:none;">
+                <h3>سحب عشوائي</h3>
+                <label>الكلمة المفتاحية للمشاركة</label>
+                <input type="text" id="drawKeyword" placeholder="مثال: انضم">
 
-            <footer class="controls-fixed">
-                <button class="btn btn-primary" onclick="startDraw()">▶️ بدء جمع المشاركين</button>
-                <button class="btn btn-outline" onclick="stopDrawCollection()">⏹️ إيقاف الجمع</button>
-                <button class="btn btn-gold" onclick="pickDrawWinner()">🎉 سحب فائز</button>
-            </footer>
+                <footer class="controls-fixed">
+                    <button class="btn btn-primary" onclick="startDraw()">▶️ بدء جمع المشاركين</button>
+                    <button class="btn btn-outline" onclick="stopDrawCollection()">⏹️ إيقاف الجمع</button>
+                    <button class="btn btn-gold" onclick="pickDrawWinner()">🎉 سحب فائز</button>
+                </footer>
 
-            <p style="color:var(--text-dim); font-size:13px; margin-top:10px;">عدد المشاركين حتى الآن: <strong id="drawCount">0</strong></p>
-            <div class="participants-list" id="drawList"></div>
+                <p style="color:var(--text-dim); font-size:13px; margin-top:10px;">عدد المشاركين حتى الآن: <strong id="drawCount">0</strong></p>
+                <div class="participants-list" id="drawList"></div>
+            </div>
         </div>
     </div>
 
@@ -695,6 +731,7 @@
     let currentState = null;
     let bankSections = [];
     let customSections = {};
+    let currentUsername = null; // اسم المستخدم المسجَّل دخوله حالياً على هذا المتصفح، أو null
 
     let newSectionType = 'direct';
     let currentEditingSectionName = null;
@@ -710,11 +747,91 @@
     socket.on('connect', () => {
         document.getElementById('connStatus').innerText = '🟢 متصل';
         document.getElementById('connStatus').classList.add('live');
+
+        // محاولة تسجيل دخول تلقائي إذا كانت هناك بيانات محفوظة من زيارة سابقة على هذا المتصفح
+        const savedUsername = localStorage.getItem('quiz_username');
+        const savedAdminKey = localStorage.getItem('quiz_admin_key');
+        if (savedUsername && savedAdminKey) {
+            socket.emit('login', { username: savedUsername, adminKey: savedAdminKey });
+        }
     });
     socket.on('disconnect', () => {
         document.getElementById('connStatus').innerText = '🔴 غير متصل';
         document.getElementById('connStatus').classList.remove('live');
     });
+
+    // ---- تسجيل الدخول / الخروج ----
+    function doLogin() {
+        const username = document.getElementById('loginUsername').value.trim();
+        const adminKey = document.getElementById('loginAdminKey').value.trim();
+        const errBox = document.getElementById('loginError');
+        errBox.style.display = 'none';
+
+        if (!username || !adminKey) {
+            errBox.innerText = 'يرجى تعبئة اسم المستخدم ومفتاح الإدارة';
+            errBox.style.display = 'block';
+            return;
+        }
+        socket.emit('login', { username, adminKey });
+    }
+
+    function doLogout() {
+        socket.emit('logout');
+        localStorage.removeItem('quiz_username');
+        localStorage.removeItem('quiz_admin_key');
+        applyLoginState(false, null);
+    }
+
+    socket.on('loginResult', (result) => {
+        const errBox = document.getElementById('loginError');
+        if (result.ok) {
+            errBox.style.display = 'none';
+            const username = document.getElementById('loginUsername').value.trim() || result.username;
+            const adminKey = document.getElementById('loginAdminKey').value.trim();
+            if (adminKey) {
+                // حُفظت فقط عند تسجيل دخول يدوي فعلي (وليس عند إعادة الدخول التلقائي من localStorage)
+                localStorage.setItem('quiz_username', result.username);
+                localStorage.setItem('quiz_admin_key', adminKey);
+            }
+            applyLoginState(true, result.username);
+        } else {
+            const messages = {
+                missing_fields: 'يرجى تعبئة اسم المستخدم ومفتاح الإدارة',
+                wrong_key: 'مفتاح الإدارة غير صحيح لهذا الحساب',
+                db_not_ready: 'قاعدة البيانات غير متصلة حالياً، حاول بعد لحظات'
+            };
+            errBox.innerText = messages[result.error] || 'تعذّر تسجيل الدخول';
+            errBox.style.display = 'block';
+            // فشل محاولة الدخول التلقائي المحفوظة: امسحها حتى لا تتكرر المحاولة الفاشلة
+            localStorage.removeItem('quiz_username');
+            localStorage.removeItem('quiz_admin_key');
+        }
+    });
+
+    socket.on('loggedOut', () => {
+        applyLoginState(false, null);
+    });
+
+    function applyLoginState(isLoggedIn, username) {
+        currentUsername = isLoggedIn ? username : null;
+
+        document.getElementById('loginForm').style.display = isLoggedIn ? 'none' : 'block';
+        document.getElementById('loggedInBox').style.display = isLoggedIn ? 'block' : 'none';
+        document.getElementById('settingsMainContent').style.display = isLoggedIn ? 'block' : 'none';
+        document.getElementById('qnaLoginHint').style.display = isLoggedIn ? 'none' : 'block';
+        document.getElementById('drawLoginHint').style.display = isLoggedIn ? 'none' : 'block';
+        document.getElementById('drawMainContent').style.display = isLoggedIn ? 'block' : 'none';
+
+        if (isLoggedIn) {
+            document.getElementById('loggedInUsername').innerText = username;
+            document.getElementById('headerUsername').innerText = username;
+            showQnaScreen('qnaHome');
+        } else {
+            document.getElementById('headerUsername').innerText = 'غير مسجل الدخول';
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginAdminKey').value = '';
+        }
+    }
 
     // ---- التبويبات ----
     document.querySelectorAll('.tab-btn').forEach(btn => {
