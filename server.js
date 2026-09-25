@@ -353,6 +353,322 @@ let questionBank = {
             { text: "أكمل بيت لأبي العتاهية:\nإذا المرء لم يدنس من اللؤم عرضه\nفكل رداء ...\nمساعدة | أول حرف: ي | آخر حرف: ه | عدد الحروف: 6", correctAnswer: "يرتديه" },
             { text: "أكمل بيت عنترة بن شداد:\nولقد ذكرتك والرماح نواهل\nمني وبيض الهند ...\nمساعدة | أول حرف: ت | آخر حرف: ي | عدد الحروف: 5", correctAnswer: "تقطر" }
         ]
+    },
+
+    "حروف مبعثرة - أسماء أولاد": {
+        type: "direct",
+        questions: [
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nم ح د م", correctAnswer: "محمد" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nد م أ ح", correctAnswer: "أحمد" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nل ع ي", correctAnswer: "علي" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nم ع ر", correctAnswer: "عمر" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nث م ع ا ن", correctAnswer: "عثمان" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nا ل د خ", correctAnswer: "خالد" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nم ة ز ح", correctAnswer: "حمزة" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nس و ي ف", correctAnswer: "يوسف" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nم ا ي ب إ ر ه", correctAnswer: "إبراهيم" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nي إ ا ع س ل م", correctAnswer: "إسماعيل" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nح س ق ا إ", correctAnswer: "إسحاق" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nو ع ي ب ق", correctAnswer: "يعقوب" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nي ل ن م س ا", correctAnswer: "سليمان" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nا د د و", correctAnswer: "داود" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nو س ى م", correctAnswer: "موسى" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nي ى ع س", correctAnswer: "عيسى" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nم د آ", correctAnswer: "آدم" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nن ح و", correctAnswer: "نوح" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nه ن و ا ر", correctAnswer: "هارون" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nي ى ي ح", correctAnswer: "يحيى" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nي ا ر ك ز", correctAnswer: "زكريا" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nأ و ب ي", correctAnswer: "أيوب" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nإ ي س د ر", correctAnswer: "إدريس" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nو ط ل", correctAnswer: "لوط" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nح ل ا ص", correctAnswer: "صالح" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nد ه و", correctAnswer: "هود" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nش ب ي ع", correctAnswer: "شعيب" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nي س ن و", correctAnswer: "يونس" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nي ل إ س ا", correctAnswer: "إلياس" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nن س أ", correctAnswer: "أنس" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nب ل ل ا", correctAnswer: "بلال" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nد س ع", correctAnswer: "سعد" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nس د ي ع", correctAnswer: "سعيد" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nل ح ة ط", correctAnswer: "طلحة" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nي د ز", correctAnswer: "زيد" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nي ز ا د", correctAnswer: "زياد" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nي س ا ر", correctAnswer: "ياسر" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nا ي ي س ن", correctAnswer: "ياسين" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nم ر ي ك", correctAnswer: "كريم" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nي ا س م", correctAnswer: "سامي" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nم ا س ر", correctAnswer: "سامر" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nل ا ئ و", correctAnswer: "وائل" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nد و ي ل", correctAnswer: "وليد" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nس و م ي", correctAnswer: "وسيم" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nم ر ي ا", correctAnswer: "رامي" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nد ا ئ ر", correctAnswer: "رائد" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nا ش ر د", correctAnswer: "راشد" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nد م ا ج", correctAnswer: "ماجد" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nا ه ر م", correctAnswer: "ماهر" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nن ا ز م", correctAnswer: "مازن" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nؤ ن م م", correctAnswer: "مؤمن" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nم ر ذ ن", correctAnswer: "منذر" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nم ع ب ص", correctAnswer: "مصعب" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nل م ع ش", correctAnswer: "مشعل" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nم ر ن ا و", correctAnswer: "مروان" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nر ا د م", correctAnswer: "مراد" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nا م ش ه", correctAnswer: "هشام" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nم ه ا م", correctAnswer: "همام" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nس ا م ح", correctAnswer: "حسام" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nس ن ح", correctAnswer: "حسن" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nي ن س ح", correctAnswer: "حسين" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nح ز م ا", correctAnswer: "حازم" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nم ح ت ا", correctAnswer: "حاتم" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nا م ج ل", correctAnswer: "جمال" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nا ب ج ر", correctAnswer: "جابر" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nد و ا ج", correctAnswer: "جواد" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nف ي ا د", correctAnswer: "فادي" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nي ف ص ل", correctAnswer: "فيصل" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nا ر س ف", correctAnswer: "فراس" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nه د ف", correctAnswer: "فهد" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nص ي ق", correctAnswer: "قصي" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nس ي ق", correctAnswer: "قيس" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nك م ل ا", correctAnswer: "كامل" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nا ل ك م", correctAnswer: "كمال" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nؤ ل ي", correctAnswer: "لؤي" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nب ل ي ن", correctAnswer: "نبيل" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nض ا ل ن", correctAnswer: "نضال" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nن ا ز ر", correctAnswer: "نزار" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nد ن ر ا", correctAnswer: "نادر" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nص ن ر ا", correctAnswer: "ناصر" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nه ن ا ي", correctAnswer: "هاني" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nه ي ا د", correctAnswer: "هادي" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nد ل ع ا", correctAnswer: "عادل" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nر م ع ا", correctAnswer: "عامر" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nا م ع ص", correctAnswer: "عاصم" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nب ع ا س", correctAnswer: "عباس" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nد ن ا ن ع", correctAnswer: "عدنان" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nص م ا ع", correctAnswer: "عصام" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nم ر ع و", correctAnswer: "عمرو" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nس ن ا غ", correctAnswer: "غسان" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nي ا غ ز", correctAnswer: "غازي" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nف ر س ا", correctAnswer: "فارس" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nف د ا ؤ", correctAnswer: "فؤاد" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nك ش ا ر", correctAnswer: "شاكر" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nد ي ا ش", correctAnswer: "شادي" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nر ف ي ش", correctAnswer: "شريف" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nر خ ص", correctAnswer: "صخر" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nا ي ء ض", correctAnswer: "ضياء" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nق ا ط ر", correctAnswer: "طارق" },
+            { text: "رتب الحروف التالية لتكوين اسم ولد:\nه ط", correctAnswer: "طه" }
+        ]
+    },
+    "حروف مبعثرة - أسماء بنات": {
+        type: "direct",
+        questions: [
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nر م م ي", correctAnswer: "مريم" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nة م ف ط ا", correctAnswer: "فاطمة" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nع ئ ش ا ة", correctAnswer: "عائشة" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nخ ج ي د ة", correctAnswer: "خديجة" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nز ب ن ي", correctAnswer: "زينب" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nي ر ق ة", correctAnswer: "رقية" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nة م ن آ", correctAnswer: "آمنة" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nف ة ح ص", correctAnswer: "حفصة" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nة ا س ر", correctAnswer: "سارة" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nه ر ج ا", correctAnswer: "هاجر" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nس آ ي ة", correctAnswer: "آسية" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nل ي ق س ب", correctAnswer: "بلقيس" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nا ن م س ي ي", correctAnswer: "ياسمين" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nر ن و", correctAnswer: "نور" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nى د ه", correctAnswer: "هدى" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nء ن ه ا", correctAnswer: "هناء" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nى س م ل", correctAnswer: "سلمى" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nى ل ي ل", correctAnswer: "ليلى" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nم ل ى", correctAnswer: "لمى" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nي ن ل", correctAnswer: "لين" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nن ل ا ا", correctAnswer: "لانا" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nا ن ر", correctAnswer: "رنا" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nن ر ي م", correctAnswer: "رنيم" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nم ر ي", correctAnswer: "ريم" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nم ا ي ر", correctAnswer: "ريما" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nف ر ه", correctAnswer: "رهف" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nر ا ن و", correctAnswer: "روان" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nد ر غ", correctAnswer: "رغد" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nن ا ر ز", correctAnswer: "رزان" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nج د و", correctAnswer: "جود" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nى ج ن", correctAnswer: "جنى" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nج ي و ر", correctAnswer: "جوري" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nا ة د ن", correctAnswer: "دانة" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nد ي ة ا ن", correctAnswer: "دانية" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nا ع ء د", correctAnswer: "دعاء" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nد ي ا م", correctAnswer: "ديما" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nا ا ي د ن", correctAnswer: "ديانا" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nء ن س ا", correctAnswer: "سناء" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nن س د س", correctAnswer: "سندس" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nى س ل و", correctAnswer: "سلوى" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nه س ى", correctAnswer: "سهى" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nش د ه", correctAnswer: "شهد" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nء ا ش ي م", correctAnswer: "شيماء" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nف ص ا", correctAnswer: "صفا" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nى ض ح", correctAnswer: "ضحى" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nر ع ب ي", correctAnswer: "عبير" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nغ د ا ة", correctAnswer: "غادة" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nغ ر ي د", correctAnswer: "غدير" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nا د ء غ ي", correctAnswer: "غيداء" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nر ح ف", correctAnswer: "فرح" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nج ر ف", correctAnswer: "فجر" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nن ي ل ج", correctAnswer: "لجين" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nا ه م", correctAnswer: "مها" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nي م", correctAnswer: "مي" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nم س ي", correctAnswer: "ميس" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nن ا ل ج ء", correctAnswer: "نجلاء" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nو ن ج ى", correctAnswer: "نجوى" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nد ى ن", correctAnswer: "ندى" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nس ر ن ي ن", correctAnswer: "نسرين" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nو ف ن", correctAnswer: "نوف" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nل ة ا ه", correctAnswer: "هالة" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nا ئ و م", correctAnswer: "وئام" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nن ج و د ا", correctAnswer: "وجدان" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nد و ا د", correctAnswer: "وداد" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nء و ف ا", correctAnswer: "وفاء" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nء ل و ا", correctAnswer: "ولاء" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nى أ ر و", correctAnswer: "أروى" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nم ا أ ء س", correctAnswer: "أسماء" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nم ا إ ن ي", correctAnswer: "إيمان" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nب و ت ل", correctAnswer: "بتول" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nس م ب ة", correctAnswer: "بسمة" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nر ب ش ى", correctAnswer: "بشرى" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nل ت ا ا", correctAnswer: "تالا" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nت ي س م ن", correctAnswer: "تسنيم" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nا ت ن ه ي", correctAnswer: "تهاني" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nث ا ر ي", correctAnswer: "ثريا" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nة ي م ل ج", correctAnswer: "جميلة" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nا ح ن ن", correctAnswer: "حنان" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nي ن ن ح", correctAnswer: "حنين" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nد ل و خ", correctAnswer: "خلود" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nا د ل ل", correctAnswer: "دلال" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nب ا ح ر", correctAnswer: "رحاب" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nة ح ر م", correctAnswer: "رحمة" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nر ا ش", correctAnswer: "رشا" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nر ج ي ت ا", correctAnswer: "ريتاج" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nى ج س", correctAnswer: "سجى" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nد م ي س", correctAnswer: "سديم" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nي س ن ي ر", correctAnswer: "سيرين" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nذ ش ى", correctAnswer: "شذى" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nب ا ص", correctAnswer: "صبا" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nر ا ر ع ب", correctAnswer: "عبرار" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nل ا ع", correctAnswer: "علا" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nى غ ن", correctAnswer: "غنى" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nف ر و ي ز", correctAnswer: "فيروز" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nر ق م", correctAnswer: "قمر" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nث و ر ك", correctAnswer: "كوثر" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nب ى ن ل", correctAnswer: "لبنى" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nم ر م ا", correctAnswer: "مرام" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nل م ا ك", correctAnswer: "ملاك" },
+            { text: "رتب الحروف التالية لتكوين اسم بنت:\nه ى ن", correctAnswer: "نهى" }
+        ]
+    },
+    "حروف مبعثرة - جمادات": {
+        type: "direct",
+        questions: [
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nم ل ق", correctAnswer: "قلم" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nت ب ا ك", correctAnswer: "كتاب" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nب ب ا", correctAnswer: "باب" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nك ب ش ا", correctAnswer: "شباك" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nي س ر ك", correctAnswer: "كرسي" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nة و ا ل ط", correctAnswer: "طاولة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nي س ر ر", correctAnswer: "سرير" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nم ر ة آ", correctAnswer: "مرآة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nس ع ا ة", correctAnswer: "ساعة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nح ا م ف ت", correctAnswer: "مفتاح" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nح ي ة ق ب", correctAnswer: "حقيبة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nظ ة ح م ف", correctAnswer: "محفظة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nا ة ن ر ظ", correctAnswer: "نظارة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nم ا ص ح ب", correctAnswer: "مصباح" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nا ف ت ه", correctAnswer: "هاتف" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nب و س ا ح", correctAnswer: "حاسوب" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nس ة ا ي ر", correctAnswer: "سيارة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nر ا د ة ج", correctAnswer: "دراجة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nة ط ر ا ئ", correctAnswer: "طائرة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nس ن ف ة ي", correctAnswer: "سفينة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nق ط ر ا", correctAnswer: "قطار" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nك ب و", correctAnswer: "كوب" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nن ص ح", correctAnswer: "صحن" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nع ة ق ل م", correctAnswer: "ملعقة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nة ك ش و", correctAnswer: "شوكة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nس ي ك ن", correctAnswer: "سكين" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nر ق ي ب إ", correctAnswer: "إبريق" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nص م ق", correctAnswer: "مقص" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nس ر ة م ط", correctAnswer: "مسطرة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nة م ا م ح", correctAnswer: "ممحاة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nد ر ت ف", correctAnswer: "دفتر" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nد ج ا ة س", correctAnswer: "سجادة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nو ا س ة د", correctAnswer: "وسادة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nن ي ة ا ب ط", correctAnswer: "بطانية" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nا ة ت ر س", correctAnswer: "ستارة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nر و ح م ة", correctAnswer: "مروحة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nل ج ث ا ة", correctAnswer: "ثلاجة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nس ة ا ل غ", correctAnswer: "غسالة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nف ن ر", correctAnswer: "فرن" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nم و د ق", correctAnswer: "موقد" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nا و ن ص ب", correctAnswer: "صابون" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nش ف ا ة ر", correctAnswer: "فرشاة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nو ج م ن ع", correctAnswer: "معجون" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nف ش ة م ن", correctAnswer: "منشفة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nط م ش", correctAnswer: "مشط" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nح ا م ز", correctAnswer: "حزام" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nب ع ق ة", correctAnswer: "قبعة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nذ ح ء ا", correctAnswer: "حذاء" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nو ر ج ب", correctAnswer: "جورب" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nي ق ص م", correctAnswer: "قميص" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nط ن ا ل ب", correctAnswer: "بنطال" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nا ف س ت ن", correctAnswer: "فستان" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nم ط ع ف", correctAnswer: "معطف" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nا ت خ م", correctAnswer: "خاتم" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nو ر س ا", correctAnswer: "سوار" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nد ة ا ق ل", correctAnswer: "قلادة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nو ق د ن", correctAnswer: "نقود" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nل ع م ة", correctAnswer: "عملة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nع ب ا ط", correctAnswer: "طابع" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nظ ف ر", correctAnswer: "ظرف" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nة س ل ر ا", correctAnswer: "رسالة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nج ي ر ة د", correctAnswer: "جريدة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nل ة ج م", correctAnswer: "مجلة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nل ة و ح", correctAnswer: "لوحة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nا ر ط إ", correctAnswer: "إطار" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nد ص ن و ق", correctAnswer: "صندوق" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nب ل ي م ر", correctAnswer: "برميل" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nر ة ج", correctAnswer: "جرة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nن إ ء ا", correctAnswer: "إناء" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nق ر د", correctAnswer: "قدر" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nق ل ة م ا", correctAnswer: "مقلاة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nة ص ي ن ي", correctAnswer: "صينية" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nز ا خ ن ة", correctAnswer: "خزانة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nف ر", correctAnswer: "رف" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nم س ل", correctAnswer: "سلم" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nم ة ر ق ط", correctAnswer: "مطرقة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nم ا ن ش ر", correctAnswer: "منشار" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nم م ر س ا", correctAnswer: "مسمار" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nر غ ب ي", correctAnswer: "برغي" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nك ف م", correctAnswer: "مفك" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nك م ة ا ش", correctAnswer: "كماشة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nل ب ح", correctAnswer: "حبل" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nة ل س ل س", correctAnswer: "سلسلة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nق ل ف", correctAnswer: "قفل" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nج س ر", correctAnswer: "جرس" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nة ش ع م", correctAnswer: "شمعة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nا ل و ع ة", correctAnswer: "ولاعة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nا ص ع", correctAnswer: "عصا" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nظ م ل ة", correctAnswer: "مظلة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nة س ل", correctAnswer: "سلة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nة ر ك", correctAnswer: "كرة" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nي ة م د", correctAnswer: "دمية" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nا ل ب و ن", correctAnswer: "بالون" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nل ط ب", correctAnswer: "طبل" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nر م ز ا م", correctAnswer: "مزمار" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nو ع د", correctAnswer: "عود" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nن ي ا", correctAnswer: "ناي" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nك م ن ا", correctAnswer: "كمان" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nر ي ق و ة", correctAnswer: "ورقية" },
+            { text: "رتب الحروف التالية لتكوين اسم شيء (جماد):\nش ع ا ر", correctAnswer: "شراع" }
+        ]
     }
 };
 
@@ -414,12 +730,22 @@ function normalizeAnswer(str) {
         .trim()
         .toLowerCase()
         .replace(/[أإآ]/g, 'ا')
+        .replace(/ؤ/g, 'و')
+        .replace(/ئ/g, 'ي')
+        .replace(/ء/g, '')
         .replace(/ى/g, 'ي')
         .replace(/ة/g, 'ه')
+        .replace(/و{2,}/g, 'و')
+        .replace(/ي{2,}/g, 'ي')
         .replace(/[\u064B-\u065F]/g, '')
         .replace(/[.,،؟!"']/g, '')
         .replace(/\s+/g, ' ')
         .trim();
+}
+
+// إزالة "ال" التعريف من بداية النص فقط، للتسامح بين "الرياض" و"رياض" مثلاً
+function stripLeadingAl(str) {
+    return (str.startsWith('ال') && str.length > 3) ? str.slice(2) : str;
 }
 
 const TRAILING_PHRASES = [
@@ -440,22 +766,54 @@ function extractCoreAnswer(rawAnswer) {
     return core.trim();
 }
 
-function isAnswerCorrect(userComment, correctRawAnswer) {
-    const userAnswer = normalizeAnswer(userComment);
-    if (!userAnswer) return false;
-
+// يفحص إجابة واحدة (نص خام) مقابل إجابة المشاهد المُطبَّعة مسبقاً
+function checkSingleAnswer(userAnswer, correctRawAnswer) {
     const core = extractCoreAnswer(correctRawAnswer);
     const fullCorrect = normalizeAnswer(correctRawAnswer);
 
     if (userAnswer === fullCorrect || userAnswer === core) return true;
+
+    // تسامح "ال" التعريف: يقبل تطابق الإجابة مع/بدون "ال" بادئة على أي من الطرفين
+    const userNoAl = stripLeadingAl(userAnswer);
+    const coreNoAl = stripLeadingAl(core);
+    const fullNoAl = stripLeadingAl(fullCorrect);
+    if (userNoAl === coreNoAl || userNoAl === fullNoAl) return true;
+
     if (core.length >= 2 && userAnswer.includes(core)) return true;
 
     const coreWords = core.split(' ').filter(Boolean);
     const userWords = userAnswer.split(' ').filter(Boolean);
     if (coreWords.length > 1 && userWords.length >= 1) {
+        // اختصار من البداية (مثال: "ابو بكر" من "ابو بكر الصديق")
         const prefix = coreWords.slice(0, userWords.length).join(' ');
         if (userWords.length < coreWords.length && userAnswer === prefix && prefix.length >= 3) {
             return true;
+        }
+        // اختصار من النهاية: فقط الكلمة الأخيرة وحدها (مثال: "نيوتن" من "إسحاق نيوتن"،
+        // "النيل" من "نهر النيل") — يُقتصر على كلمة واحدة أخيرة، ويُستبعد إذا كانت الكلمة
+        // السابقة لها "بن"/"بنت" حتى لا يُقبل اختصار ناقص المعنى مثل "الوليد" بدل "خالد بن الوليد"
+        if (userWords.length === 1) {
+            const lastWord = coreWords[coreWords.length - 1];
+            const precedingWord = coreWords[coreWords.length - 2];
+            const isPatronymicTail = precedingWord === 'بن' || precedingWord === 'بنت';
+            if (!isPatronymicTail && lastWord.length >= 3 &&
+                (userAnswer === lastWord || stripLeadingAl(userAnswer) === stripLeadingAl(lastWord))) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+function isAnswerCorrect(userComment, correctRawAnswer, altAnswers) {
+    const userAnswer = normalizeAnswer(userComment);
+    if (!userAnswer) return false;
+
+    if (checkSingleAnswer(userAnswer, correctRawAnswer)) return true;
+
+    if (Array.isArray(altAnswers)) {
+        for (const alt of altAnswers) {
+            if (checkSingleAnswer(userAnswer, alt)) return true;
         }
     }
     return false;
@@ -617,7 +975,7 @@ function askNextQuestion() {
         state.currentCorrectAnswer = { choices: q.choices, correctIndex: q.correctIndex };
     } else {
         state.currentQuestion = { text: q.text, sectionName: item.sectionName };
-        state.currentCorrectAnswer = { text: q.correctAnswer };
+        state.currentCorrectAnswer = { text: q.correctAnswer, alt: q.altAnswers || [] };
     }
 
     broadcastState();
@@ -937,7 +1295,7 @@ tiktokConnection.on('chat', (data) => {
         if (isChoicesQuestion) {
             correct = isChoiceCorrect(comment, state.currentCorrectAnswer.choices, state.currentCorrectAnswer.correctIndex);
         } else {
-            correct = isAnswerCorrect(comment, state.currentCorrectAnswer.text);
+            correct = isAnswerCorrect(comment, state.currentCorrectAnswer.text, state.currentCorrectAnswer.alt);
         }
 
         if (correct) {
