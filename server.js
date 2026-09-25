@@ -3,6 +3,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
+const crypto = require('crypto');
 const { MongoClient } = require('mongodb');
 
 const app = express();
@@ -13,141 +14,54 @@ const io = new Server(server, {
     allowEIO3: true
 });
 
-// اسم حساب صاحب البث
-const TARGET_USERNAME = "a_7_m_d2";
-
 app.use(express.static(path.join(__dirname, 'public')));
+
+// اسم الحساب الأصلي الوحيد الذي كان يعمل عليه الموقع قبل دعم الجلسات المتعددة،
+// يُستخدم فقط لمرة واحدة لترحيل بياناته القديمة (الأسئلة الخاصة + السجل التاريخي)
+// إلى الشكل الجديد المرتبط باسم المستخدم عند أول تسجيل دخول بهذا الاسم تحديداً
+const LEGACY_USERNAME = "a_7_m_d2";
 
 // ==================== الاتصال بقاعدة بيانات MongoDB (تخزين دائم) ====================
 const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://falconabd91_db_user:I7TBT8VKdM5Zr7JV@cluster0.cvlkw88.mongodb.net/?appName=Cluster0";
 const mongoClient = new MongoClient(MONGO_URI);
 let db = null;
-let customSectionsCollection = null;
-let leaderboardCollection = null;
+let accountsCollection = null;       // { _id: username, adminKeyHash, createdAt }
+let customSectionsCollection = null; // { _id: username, data: {...} }
+let leaderboardCollection = null;    // { _id: `${username}::${playerName}`, username, playerName, correctAnswers, gold, silver, bronze }
 let dbReady = false;
 
 async function connectDB() {
     try {
         await mongoClient.connect();
         db = mongoClient.db("tiktok_quiz");
+        accountsCollection = db.collection("accounts");
         customSectionsCollection = db.collection("customSections");
         leaderboardCollection = db.collection("leaderboard");
-        console.log('✅ متصل بقاعدة بيانات MongoDB بنجاح');
-        await loadCustomSectionsFromDB();
-        await loadLeaderboardFromDB();
         dbReady = true;
-        broadcastSectionsLists();
-        broadcastHistoricalLeaderboard();
+        console.log('✅ متصل بقاعدة بيانات MongoDB بنجاح');
     } catch (err) {
         console.error('❌ فشل الاتصال بقاعدة البيانات:', err.toString());
     }
 }
 
-// تحميل الأقسام الخاصة المحفوظة من قاعدة البيانات عند بدء تشغيل السيرفر
-async function loadCustomSectionsFromDB() {
-    if (!customSectionsCollection) return;
-    const doc = await customSectionsCollection.findOne({ _id: "sections" });
-    if (doc && doc.data) {
-        customSections = doc.data;
-        // ضبط عدادات المعرّفات لتفادي تكرار id عند إضافة أقسام/أسئلة جديدة
-        Object.values(customSections).forEach(sec => {
-            if (sec.id >= customSectionIdCounter) customSectionIdCounter = sec.id + 1;
-            (sec.questions || []).forEach(q => {
-                if (q.id >= customQuestionIdCounter) customQuestionIdCounter = q.id + 1;
-            });
-        });
-        console.log(`📂 تم تحميل ${Object.keys(customSections).length} قسم خاص من قاعدة البيانات`);
-    }
+function hashAdminKey(key) {
+    return crypto.createHash('sha256').update(String(key)).digest('hex');
 }
 
-// حفظ الأقسام الخاصة بالكامل في قاعدة البيانات (يُستدعى بعد أي تعديل)
-async function saveCustomSectionsToDB() {
-    if (!customSectionsCollection) return;
-    try {
-        await customSectionsCollection.updateOne(
-            { _id: "sections" },
-            { $set: { data: customSections } },
-            { upsert: true }
-        );
-    } catch (err) {
-        console.error('❌ خطأ أثناء حفظ الأقسام الخاصة:', err.toString());
+// يتحقق من الدخول لاسم مستخدم معيّن: ينشئ الحساب بأول محاولة (المفتاح المُدخل يصبح كلمة السر)،
+// أو يتحقق من تطابق المفتاح إن كان الحساب موجوداً مسبقاً
+async function verifyOrCreateAccount(username, adminKey) {
+    if (!accountsCollection) return { ok: false, error: 'db_not_ready' };
+    const keyHash = hashAdminKey(adminKey);
+    const existing = await accountsCollection.findOne({ _id: username });
+    if (!existing) {
+        await accountsCollection.insertOne({ _id: username, adminKeyHash: keyHash, createdAt: new Date() });
+        return { ok: true, created: true };
     }
-}
-
-// ==================== السجل التاريخي الدائم لقائمة المتصدرين ====================
-// شكل كل مستند: { _id: اسم اللاعب, correctAnswers: عدد, gold: عدد, silver: عدد, bronze: عدد }
-let historicalLeaderboard = {}; // نسخة في الذاكرة للقراءة السريعة، مرآة لقاعدة البيانات
-
-async function loadLeaderboardFromDB() {
-    if (!leaderboardCollection) return;
-    const docs = await leaderboardCollection.find({}).toArray();
-    historicalLeaderboard = {};
-    docs.forEach(doc => {
-        historicalLeaderboard[doc._id] = {
-            correctAnswers: doc.correctAnswers || 0,
-            gold: doc.gold || 0,
-            silver: doc.silver || 0,
-            bronze: doc.bronze || 0
-        };
-    });
-    console.log(`🏆 تم تحميل سجل ${docs.length} لاعب من قائمة المتصدرين التاريخية`);
-}
-
-async function addHistoricalCorrectAnswer(name) {
-    if (!historicalLeaderboard[name]) {
-        historicalLeaderboard[name] = { correctAnswers: 0, gold: 0, silver: 0, bronze: 0 };
+    if (existing.adminKeyHash !== keyHash) {
+        return { ok: false, error: 'wrong_key' };
     }
-    historicalLeaderboard[name].correctAnswers += 1;
-    if (leaderboardCollection) {
-        try {
-            await leaderboardCollection.updateOne(
-                { _id: name },
-                { $inc: { correctAnswers: 1 }, $setOnInsert: { gold: 0, silver: 0, bronze: 0 } },
-                { upsert: true }
-            );
-        } catch (err) {
-            console.error('❌ خطأ أثناء حفظ إجابة صحيحة بالسجل التاريخي:', err.toString());
-        }
-    }
-}
-
-async function addHistoricalMedal(name, medalType) {
-    if (!historicalLeaderboard[name]) {
-        historicalLeaderboard[name] = { correctAnswers: 0, gold: 0, silver: 0, bronze: 0 };
-    }
-    historicalLeaderboard[name][medalType] += 1;
-    if (leaderboardCollection) {
-        try {
-            const incField = {};
-            incField[medalType] = 1;
-            await leaderboardCollection.updateOne(
-                { _id: name },
-                { $inc: incField, $setOnInsert: { correctAnswers: 0 } },
-                { upsert: true }
-            );
-        } catch (err) {
-            console.error('❌ خطأ أثناء حفظ ميدالية بالسجل التاريخي:', err.toString());
-        }
-    }
-}
-
-async function clearHistoricalLeaderboard() {
-    historicalLeaderboard = {};
-    if (leaderboardCollection) {
-        try {
-            await leaderboardCollection.deleteMany({});
-        } catch (err) {
-            console.error('❌ خطأ أثناء مسح السجل التاريخي:', err.toString());
-        }
-    }
-    broadcastHistoricalLeaderboard();
-}
-
-function broadcastHistoricalLeaderboard() {
-    const list = Object.entries(historicalLeaderboard)
-        .map(([name, data]) => ({ name, ...data }))
-        .sort((a, b) => (b.gold - a.gold) || (b.silver - a.silver) || (b.bronze - a.bronze) || (b.correctAnswers - a.correctAnswers));
-    io.emit('historicalLeaderboardUpdate', list);
+    return { ok: true, created: false };
 }
 
 // ==================== بنك الأسئلة الثابتة (من الكود فقط) ====================
@@ -672,59 +586,8 @@ let questionBank = {
     }
 };
 
-// ==================== الأقسام الخاصة (يديرها الأدمن، تُحفظ في الذاكرة + قاعدة البيانات) ====================
-let customSections = {};
-let customSectionIdCounter = 1;
-let customQuestionIdCounter = 1;
 
-// ==================== حالة النظام العامة ====================
-let state = {
-    // نظام المسابقة: 'manual' (يدوي) أو 'auto' (تلقائي)
-    competitionMode: 'auto',
-
-    // نظام التوقيت: 'speed' (سريع) أو 'time' (وقت)
-    timingMode: 'time',
-
-    // المجموعات
-    teamMode: false,
-    registrationOpen: false,
-    teams: { م1: [], م2: [] },
-    manualTeamPoints: { م1: 0, م2: 0 }, // نقاط إضافية يدوية من الأدمن (➕/➖) تُضاف لنتيجة المسابقة الحالية
-
-    // السحب العشوائي
-    drawMode: false,
-    drawKeyword: null,
-    drawParticipants: [],
-
-    // إعداد المسابقة الحالية
-    competitionActive: false,
-    competitionPaused: false,
-    competitionSelectedSections: [], // [{ source: 'bank'|'custom', name: '...' }]
-    competitionDuration: null,
-    competitionTotalQuestions: null,
-    competitionAskedCount: 0,
-    competitionQueue: [], // [{ source, sectionName, questionIndex }] مخلوطة بلا تكرار حتى انتهاء العدد المطلوب
-
-    // السؤال الحالي
-    currentQuestion: null,       // { text, choices? }
-    currentCorrectAnswer: null,  // { text } أو { choices, correctIndex }
-    roundActive: false,
-    roundStartTime: null,
-    roundEndsAt: null,           // الوقت المتوقع لانتهاء الجولة (يُعاد حسابه عند تفعيل السرعة)
-    waitingForNext: false,       // بعد انتهاء وقت السؤال: تُعرض شاشة الإجابة الصحيحة
-    showingAnswerReveal: false,  // true أثناء عرض "الإجابة الصحيحة + أصحاب الإجابات" (5 ثوانٍ بالتلقائي أو حتى ضغط الأدمن باليدوي)
-    speedTriggered: false,       // في النظام السريع: هل تم بالفعل تقليص الوقت بعد أول إجابة صحيحة لهذا السؤال
-
-    // نتائج المسابقة الحالية فقط (تُصفَّر مع كل مسابقة جديدة)
-    correctAnswersThisQuestion: [], // [{ name, team, timeSeconds }] بترتيب الوصول لهذا السؤال فقط، بالثواني من بداية السؤال
-    competitionResults: {},         // { name: { count, team, firstAnswerTime, totalAnswerTimeMs } } لكل المسابقة الحالية
-    competitionFinished: false,
-    competitionFinalRanking: []     // تُحسب عند انتهاء المسابقة: [{ name, count, team, medal }]
-};
-
-let questionTimer = null;      // مؤقت انتهاء وقت السؤال أو مؤقت شاشة الإجابة الصحيحة (5 ثوانٍ)
-
-// ==================== أدوات مساعدة: مطابقة الإجابات ====================
+// ==================== أدوات مساعدة: مطابقة الإجابات (مشتركة، لا تعتمد على حالة أي جلسة) ====================
 function normalizeAnswer(str) {
     return (str || '')
         .trim()
@@ -824,7 +687,6 @@ function isChoiceCorrect(userComment, choices, correctIndex) {
     if (!userAnswer) return false;
 
     // الصيغة المطلوبة: "خ" متبوعة برقم الخيار (خ1، خ2، خ3، خ4)
-    // خ تتحول لـ "ح" أحياناً عبر الكيبورد أو تبقى كما هي؛ نقبل "خ" فقط كما طُلب، مع تجاهل مسافة محتملة بينها وبين الرقم
     const khMatch = userAnswer.match(/^خ\s*([1-4])$/);
     if (khMatch) {
         return (parseInt(khMatch[1], 10) - 1) === correctIndex;
@@ -839,23 +701,255 @@ function isChoiceCorrect(userComment, choices, correctIndex) {
     return isAnswerCorrect(userComment, choices[correctIndex]);
 }
 
-// ==================== بث الحالة ====================
-function broadcastState() {
-    io.emit('stateUpdate', state);
+function shuffleArray(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
 }
 
-function broadcastSectionsLists() {
+// ==================== إدارة الجلسات المتعددة ====================
+// كل جلسة (= بث واحد بحساب TikTok واحد) تملك حالتها، أقسامها الخاصة،
+// سجلها التاريخي، ومؤقتاتها، واتصال TikTok الخاص بها، بشكل مستقل تماماً
+const sessions = new Map(); // username -> session object
+const IDLE_CLEANUP_MS = 6 * 60 * 60 * 1000; // 6 ساعات خمول قبل تحرير الجلسة من الذاكرة
+
+function createFreshState() {
+    return {
+        // نظام المسابقة: 'manual' (يدوي) أو 'auto' (تلقائي)
+        competitionMode: 'auto',
+        // نظام التوقيت: 'speed' (سريع) أو 'time' (وقت)
+        timingMode: 'time',
+
+        // المجموعات
+        teamMode: false,
+        registrationOpen: false,
+        teams: { م1: [], م2: [] },
+        manualTeamPoints: { م1: 0, م2: 0 },
+
+        // السحب العشوائي
+        drawMode: false,
+        drawKeyword: null,
+        drawParticipants: [],
+
+        // إعداد المسابقة الحالية
+        competitionActive: false,
+        competitionPaused: false,
+        competitionSelectedSections: [],
+        competitionDuration: null,
+        competitionTotalQuestions: null,
+        competitionAskedCount: 0,
+        competitionQueue: [],
+
+        // السؤال الحالي
+        currentQuestion: null,
+        currentCorrectAnswer: null,
+        roundActive: false,
+        roundStartTime: null,
+        waitingForNext: false,
+        showingAnswerReveal: false,
+        speedTriggered: false,
+
+        // نتائج المسابقة الحالية فقط
+        correctAnswersThisQuestion: [],
+        competitionResults: {},
+        competitionFinished: false,
+        competitionFinalRanking: []
+    };
+}
+
+function createSessionObject(username) {
+    return {
+        username,
+        state: createFreshState(),
+        customSections: {},
+        customSectionIdCounter: 1,
+        customQuestionIdCounter: 1,
+        historicalLeaderboard: {}, // { playerName: { correctAnswers, gold, silver, bronze } }
+        questionTimer: null,
+        pausedRemainingMs: null,
+        tiktokConnection: null,
+        tiktokConnected: false,
+        processedMessages: new Set(),
+        lastActiveAt: Date.now()
+    };
+}
+
+// يُرجع الجلسة الحالية إن كانت موجودة في الذاكرة، دون إنشائها
+function getSession(username) {
+    return sessions.get(username) || null;
+}
+
+// ==================== تحميل/حفظ بيانات الجلسة من وإلى قاعدة البيانات ====================
+async function loadCustomSectionsForSession(session) {
+    if (!customSectionsCollection) return;
+    let doc = await customSectionsCollection.findOne({ _id: session.username });
+
+    // ترحيل لمرة واحدة: أول تسجيل دخول بالحساب القديم يستورد أسئلته الخاصة المحفوظة
+    // سابقاً تحت المعرّف العام القديم "sections" قبل دعم الجلسات المتعددة
+    if (!doc && session.username === LEGACY_USERNAME) {
+        const legacyDoc = await customSectionsCollection.findOne({ _id: "sections" });
+        if (legacyDoc && legacyDoc.data) {
+            doc = legacyDoc;
+            await customSectionsCollection.updateOne(
+                { _id: session.username },
+                { $set: { data: legacyDoc.data } },
+                { upsert: true }
+            );
+            console.log(`📦 تم ترحيل الأسئلة الخاصة القديمة إلى الحساب ${session.username}`);
+        }
+    }
+
+    if (doc && doc.data) {
+        session.customSections = doc.data;
+        Object.values(session.customSections).forEach(sec => {
+            if (sec.id >= session.customSectionIdCounter) session.customSectionIdCounter = sec.id + 1;
+            (sec.questions || []).forEach(q => {
+                if (q.id >= session.customQuestionIdCounter) session.customQuestionIdCounter = q.id + 1;
+            });
+        });
+        console.log(`📂 [${session.username}] تم تحميل ${Object.keys(session.customSections).length} قسم خاص`);
+    }
+}
+
+async function saveCustomSectionsForSession(session) {
+    if (!customSectionsCollection) return;
+    try {
+        await customSectionsCollection.updateOne(
+            { _id: session.username },
+            { $set: { data: session.customSections } },
+            { upsert: true }
+        );
+    } catch (err) {
+        console.error(`❌ [${session.username}] خطأ أثناء حفظ الأقسام الخاصة:`, err.toString());
+    }
+}
+
+async function loadLeaderboardForSession(session) {
+    if (!leaderboardCollection) return;
+    let docs = await leaderboardCollection.find({ username: session.username }).toArray();
+
+    // ترحيل لمرة واحدة لسجل الحساب القديم (كان محفوظاً بلا ربط باسم مستخدم من الأساس،
+    // لأن الموقع كان يخدم هذا الحساب فقط قبل دعم الجلسات المتعددة)
+    if (docs.length === 0 && session.username === LEGACY_USERNAME) {
+        const legacyDocs = await leaderboardCollection.find({ username: { $exists: false } }).toArray();
+        if (legacyDocs.length > 0) {
+            for (const legacyDoc of legacyDocs) {
+                const playerName = legacyDoc._id;
+                await leaderboardCollection.updateOne(
+                    { _id: `${session.username}::${playerName}` },
+                    {
+                        $set: {
+                            username: session.username,
+                            playerName,
+                            correctAnswers: legacyDoc.correctAnswers || 0,
+                            gold: legacyDoc.gold || 0,
+                            silver: legacyDoc.silver || 0,
+                            bronze: legacyDoc.bronze || 0
+                        }
+                    },
+                    { upsert: true }
+                );
+            }
+            console.log(`📦 تم ترحيل السجل التاريخي القديم (${legacyDocs.length} لاعب) إلى الحساب ${session.username}`);
+            docs = await leaderboardCollection.find({ username: session.username }).toArray();
+        }
+    }
+
+    session.historicalLeaderboard = {};
+    docs.forEach(doc => {
+        session.historicalLeaderboard[doc.playerName] = {
+            correctAnswers: doc.correctAnswers || 0,
+            gold: doc.gold || 0,
+            silver: doc.silver || 0,
+            bronze: doc.bronze || 0
+        };
+    });
+    console.log(`🏆 [${session.username}] تم تحميل سجل ${docs.length} لاعب`);
+}
+
+async function addHistoricalCorrectAnswer(session, name) {
+    if (!session.historicalLeaderboard[name]) {
+        session.historicalLeaderboard[name] = { correctAnswers: 0, gold: 0, silver: 0, bronze: 0 };
+    }
+    session.historicalLeaderboard[name].correctAnswers += 1;
+    if (leaderboardCollection) {
+        try {
+            await leaderboardCollection.updateOne(
+                { _id: `${session.username}::${name}` },
+                {
+                    $inc: { correctAnswers: 1 },
+                    $setOnInsert: { username: session.username, playerName: name, gold: 0, silver: 0, bronze: 0 }
+                },
+                { upsert: true }
+            );
+        } catch (err) {
+            console.error(`❌ [${session.username}] خطأ أثناء حفظ إجابة صحيحة بالسجل التاريخي:`, err.toString());
+        }
+    }
+}
+
+async function addHistoricalMedal(session, name, medalType) {
+    if (!session.historicalLeaderboard[name]) {
+        session.historicalLeaderboard[name] = { correctAnswers: 0, gold: 0, silver: 0, bronze: 0 };
+    }
+    session.historicalLeaderboard[name][medalType] += 1;
+    if (leaderboardCollection) {
+        try {
+            const incField = {};
+            incField[medalType] = 1;
+            await leaderboardCollection.updateOne(
+                { _id: `${session.username}::${name}` },
+                {
+                    $inc: incField,
+                    $setOnInsert: { username: session.username, playerName: name, correctAnswers: 0 }
+                },
+                { upsert: true }
+            );
+        } catch (err) {
+            console.error(`❌ [${session.username}] خطأ أثناء حفظ ميدالية بالسجل التاريخي:`, err.toString());
+        }
+    }
+}
+
+async function clearHistoricalLeaderboardForSession(session) {
+    session.historicalLeaderboard = {};
+    if (leaderboardCollection) {
+        try {
+            await leaderboardCollection.deleteMany({ username: session.username });
+        } catch (err) {
+            console.error(`❌ [${session.username}] خطأ أثناء مسح السجل التاريخي:`, err.toString());
+        }
+    }
+    broadcastHistoricalLeaderboard(session);
+}
+
+// ==================== بث الحالة (يُرسَل فقط لغرفة هذه الجلسة تحديداً) ====================
+function broadcastState(session) {
+    io.to(session.username).emit('stateUpdate', session.state);
+}
+
+function broadcastSectionsLists(session) {
     const bankSectionNames = Object.keys(questionBank).map(name => ({
         name, type: questionBank[name].type, count: questionBank[name].questions.length
     }));
-    io.emit('sectionsUpdate', {
+    io.to(session.username).emit('sectionsUpdate', {
         bankSections: bankSectionNames,
-        customSections: customSections
+        customSections: session.customSections
     });
 }
 
-// ترتيب المتسابقين الحاليين أثناء المسابقة (تُعرض تحت السؤال أثناء اللعب)
-function getCurrentCompetitionRanking() {
+function broadcastHistoricalLeaderboard(session) {
+    const list = Object.entries(session.historicalLeaderboard)
+        .map(([name, data]) => ({ name, ...data }))
+        .sort((a, b) => (b.gold - a.gold) || (b.silver - a.silver) || (b.bronze - a.bronze) || (b.correctAnswers - a.correctAnswers));
+    io.to(session.username).emit('historicalLeaderboardUpdate', list);
+}
+
+function getCurrentCompetitionRanking(session) {
+    const state = session.state;
     if (state.teamMode) {
         const teamCounts = { م1: 0, م2: 0 };
         Object.values(state.competitionResults).forEach(r => {
@@ -872,48 +966,38 @@ function getCurrentCompetitionRanking() {
     }
 }
 
-function broadcastCurrentRanking() {
-    io.emit('currentRankingUpdate', getCurrentCompetitionRanking());
+function broadcastCurrentRanking(session) {
+    io.to(session.username).emit('currentRankingUpdate', getCurrentCompetitionRanking(session));
 }
 
-function getPlayerTeam(name) {
-    if (state.teams["م1"].includes(name)) return "م1";
-    if (state.teams["م2"].includes(name)) return "م2";
+function getPlayerTeam(session, name) {
+    if (session.state.teams["م1"].includes(name)) return "م1";
+    if (session.state.teams["م2"].includes(name)) return "م2";
     return null;
 }
 
-function getSectionQuestions(source, sectionName) {
+function getSectionQuestions(session, source, sectionName) {
     if (source === 'bank') {
         return questionBank[sectionName] ? questionBank[sectionName].questions : [];
     } else {
-        return customSections[sectionName] ? customSections[sectionName].questions : [];
+        return session.customSections[sectionName] ? session.customSections[sectionName].questions : [];
     }
 }
 
-function getSectionType(source, sectionName) {
+function getSectionType(session, source, sectionName) {
     if (source === 'bank') {
         return questionBank[sectionName] ? questionBank[sectionName].type : null;
     } else {
-        return customSections[sectionName] ? customSections[sectionName].type : null;
+        return session.customSections[sectionName] ? session.customSections[sectionName].type : null;
     }
-}
-
-function shuffleArray(arr) {
-    const a = arr.slice();
-    for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
 }
 
 // ==================== منطق المسابقة (أسئلة وأجوبة) ====================
-// يبني قائمة أسئلة مخلوطة من عدة أقسام مجتمعة، بلا تكرار، بحد أقصى العدد المطلوب
-function buildQuestionQueue(selectedSections, totalQuestions) {
+function buildQuestionQueue(session, selectedSections, totalQuestions) {
     let pool = [];
     selectedSections.forEach(sec => {
-        const questions = getSectionQuestions(sec.source, sec.name);
-        const type = getSectionType(sec.source, sec.name);
+        const questions = getSectionQuestions(session, sec.source, sec.name);
+        const type = getSectionType(session, sec.source, sec.name);
         questions.forEach((q, idx) => {
             pool.push({ source: sec.source, sectionName: sec.name, questionIndex: idx, type });
         });
@@ -922,12 +1006,13 @@ function buildQuestionQueue(selectedSections, totalQuestions) {
     return pool.slice(0, Math.min(totalQuestions, pool.length));
 }
 
-function startCompetition(selectedSections, duration, totalQuestions, timingMode) {
+function startCompetition(session, selectedSections, duration, totalQuestions, timingMode) {
     if (!selectedSections || selectedSections.length === 0) return false;
 
-    const queue = buildQuestionQueue(selectedSections, totalQuestions);
+    const queue = buildQuestionQueue(session, selectedSections, totalQuestions);
     if (queue.length === 0) return false;
 
+    const state = session.state;
     state.competitionActive = true;
     state.competitionPaused = false;
     state.competitionSelectedSections = selectedSections;
@@ -945,21 +1030,22 @@ function startCompetition(selectedSections, duration, totalQuestions, timingMode
     state.waitingForNext = false;
     state.showingAnswerReveal = false;
 
-    broadcastState();
-    askNextQuestion();
+    broadcastState(session);
+    askNextQuestion(session);
     return true;
 }
 
-function askNextQuestion() {
-    if (questionTimer) { clearTimeout(questionTimer); questionTimer = null; }
+function askNextQuestion(session) {
+    const state = session.state;
+    if (session.questionTimer) { clearTimeout(session.questionTimer); session.questionTimer = null; }
 
     if (state.competitionQueue.length === 0) {
-        finishCompetition();
+        finishCompetition(session);
         return;
     }
 
     const item = state.competitionQueue.shift();
-    const questions = getSectionQuestions(item.source, item.sectionName);
+    const questions = getSectionQuestions(session, item.source, item.sectionName);
     const q = questions[item.questionIndex];
 
     state.competitionAskedCount += 1;
@@ -978,69 +1064,68 @@ function askNextQuestion() {
         state.currentCorrectAnswer = { text: q.correctAnswer, alt: q.altAnswers || [] };
     }
 
-    broadcastState();
-    broadcastCurrentRanking();
+    broadcastState(session);
+    broadcastCurrentRanking(session);
 
-    questionTimer = setTimeout(() => {
-        revealAnswer();
+    session.questionTimer = setTimeout(() => {
+        revealAnswer(session);
     }, state.competitionDuration * 1000);
 }
 
-// تُستدعى عند انتهاء وقت السؤال الطبيعي، أو عند انتهاء مهلة الـ5 ثوانٍ بعد أول إجابة صحيحة في النظام السريع
-function revealAnswer() {
-    if (questionTimer) { clearTimeout(questionTimer); questionTimer = null; }
+function revealAnswer(session) {
+    const state = session.state;
+    if (session.questionTimer) { clearTimeout(session.questionTimer); session.questionTimer = null; }
 
     state.roundActive = false;
     state.waitingForNext = true;
     state.showingAnswerReveal = true;
-    broadcastState();
+    broadcastState(session);
 
     if (state.competitionMode === 'auto') {
-        questionTimer = setTimeout(() => {
-            askNextQuestion();
+        session.questionTimer = setTimeout(() => {
+            askNextQuestion(session);
         }, 5000);
     }
-    // في الوضع اليدوي: تبقى شاشة الإجابة ظاهرة حتى ضغط الأدمن على "السؤال التالي"
 }
 
-function finishCompetition() {
+function finishCompetition(session) {
+    const state = session.state;
     state.competitionActive = false;
     state.competitionFinished = true;
     state.roundActive = false;
     state.waitingForNext = false;
     state.showingAnswerReveal = false;
     state.currentQuestion = null;
-    if (questionTimer) { clearTimeout(questionTimer); questionTimer = null; }
+    if (session.questionTimer) { clearTimeout(session.questionTimer); session.questionTimer = null; }
 
-    // بناء الترتيب النهائي: عدد الإجابات الصحيحة تنازلياً، وعند التعادل الأسرع (متوسط سرعة الإجابة) يتقدم
     const ranking = Object.entries(state.competitionResults)
         .map(([name, r]) => ({
             name,
             count: r.count,
             team: r.team || null,
-            avgSpeed: r.totalAnswerTimeMs / r.count // زمن أقل = أسرع = أفضل
+            avgSpeed: r.totalAnswerTimeMs / r.count
         }))
         .sort((a, b) => b.count - a.count || a.avgSpeed - b.avgSpeed);
 
-    // توزيع 3 ميداليات فقط للمراكز الثلاثة الأولى (فردي فقط؛ في وضع المجموعات لا ميداليات فردية)
     if (!state.teamMode) {
         const medals = ['gold', 'silver', 'bronze'];
         ranking.slice(0, 3).forEach((player, idx) => {
             player.medal = medals[idx];
-            addHistoricalMedal(player.name, medals[idx]);
+            addHistoricalMedal(session, player.name, medals[idx]);
         });
     }
 
     state.competitionFinalRanking = ranking;
-    broadcastState();
+    broadcastState(session);
 }
 
-function nextQuestionManually() {
-    if (!state.competitionActive || !state.waitingForNext) return;
-    askNextQuestion();
+function nextQuestionManually(session) {
+    if (!session.state.competitionActive || !session.state.waitingForNext) return;
+    askNextQuestion(session);
 }
 
-function stopCompetitionManually() {
+function stopCompetitionManually(session) {
+    const state = session.state;
     state.competitionActive = false;
     state.competitionPaused = false;
     state.competitionFinished = false;
@@ -1050,96 +1135,325 @@ function stopCompetitionManually() {
     state.currentQuestion = null;
     state.competitionSelectedSections = [];
     state.competitionQueue = [];
-    if (questionTimer) { clearTimeout(questionTimer); questionTimer = null; }
-    broadcastState();
+    if (session.questionTimer) { clearTimeout(session.questionTimer); session.questionTimer = null; }
+    broadcastState(session);
 }
 
-// إيقاف مؤقت: يجمّد المؤقت الحالي بحفظ الوقت المتبقي، بلا إنهاء المسابقة
-let pausedRemainingMs = null;
-function pauseCompetition() {
+function pauseCompetition(session) {
+    const state = session.state;
     if (!state.competitionActive || state.competitionPaused) return;
-    if (state.roundActive && questionTimer) {
+    if (state.roundActive && session.questionTimer) {
         const elapsed = Date.now() - state.roundStartTime;
-        pausedRemainingMs = Math.max(0, state.competitionDuration * 1000 - elapsed);
-        clearTimeout(questionTimer);
-        questionTimer = null;
+        session.pausedRemainingMs = Math.max(0, state.competitionDuration * 1000 - elapsed);
+        clearTimeout(session.questionTimer);
+        session.questionTimer = null;
     }
     state.competitionPaused = true;
-    broadcastState();
+    broadcastState(session);
 }
 
-function resumeCompetition() {
+function resumeCompetition(session) {
+    const state = session.state;
     if (!state.competitionActive || !state.competitionPaused) return;
     state.competitionPaused = false;
 
-    if (state.roundActive && pausedRemainingMs !== null) {
-        // إعادة ضبط وقت البداية بحيث يبقى العداد المعروض متوافقاً مع الوقت المتبقي الفعلي
-        state.roundStartTime = Date.now() - (state.competitionDuration * 1000 - pausedRemainingMs);
-        questionTimer = setTimeout(() => {
-            revealAnswer();
-        }, pausedRemainingMs);
-        pausedRemainingMs = null;
+    if (state.roundActive && session.pausedRemainingMs !== null) {
+        state.roundStartTime = Date.now() - (state.competitionDuration * 1000 - session.pausedRemainingMs);
+        session.questionTimer = setTimeout(() => {
+            revealAnswer(session);
+        }, session.pausedRemainingMs);
+        session.pausedRemainingMs = null;
     }
-    broadcastState();
+    broadcastState(session);
 }
 
-function adjustManualTeamPoints(team, delta) {
+function adjustManualTeamPoints(session, team, delta) {
     if (team !== 'م1' && team !== 'م2') return;
+    const state = session.state;
     state.manualTeamPoints[team] = Math.max(0, (state.manualTeamPoints[team] || 0) + delta);
-    broadcastState();
-    broadcastCurrentRanking();
+    broadcastState(session);
+    broadcastCurrentRanking(session);
 }
+
+// ==================== اتصال TikTok مستقل لكل جلسة ====================
+function startTikTokConnectionForSession(session) {
+    const connection = new TikTokLiveConnection(session.username, {
+        requestOptions: { timeout: 10000 },
+        websocketOptions: { timeout: 10000 }
+    });
+    session.tiktokConnection = connection;
+
+    connection.on('chat', (data) => {
+        if (!data) return;
+        const msgId = data.msgId || (data.msg && data.msg.id);
+        if (msgId && session.processedMessages.has(msgId)) return;
+        if (msgId) session.processedMessages.add(msgId);
+
+        const nickname = data.nickname || (data.user && data.user.nickname) || 'unknown';
+        const comment = (data.comment || data.text || data.content || '').trim();
+        if (!comment) return;
+
+        const state = session.state;
+
+        if (state.registrationOpen) {
+            const clean = comment.replace(/\s+/g, '');
+            if (clean === 'م1' && !state.teams["م1"].includes(nickname) && !state.teams["م2"].includes(nickname)) {
+                state.teams["م1"].push(nickname);
+                broadcastState(session);
+                return;
+            }
+            if (clean === 'م2' && !state.teams["م2"].includes(nickname) && !state.teams["م1"].includes(nickname)) {
+                state.teams["م2"].push(nickname);
+                broadcastState(session);
+                return;
+            }
+        }
+
+        if (state.drawMode && state.drawKeyword) {
+            if (comment.includes(state.drawKeyword) && !state.drawParticipants.includes(nickname)) {
+                state.drawParticipants.push(nickname);
+                io.to(session.username).emit('drawParticipantsUpdate', state.drawParticipants);
+            }
+            return;
+        }
+
+        if (state.roundActive && state.currentQuestion && state.currentCorrectAnswer && !state.competitionPaused) {
+            const team = getPlayerTeam(session, nickname);
+            if (state.teamMode && !team) return;
+
+            const alreadyAnswered = state.correctAnswersThisQuestion.some(a => a.name === nickname);
+            if (alreadyAnswered) return;
+
+            const isChoicesQuestion = !!state.currentCorrectAnswer.choices;
+            let correct = false;
+            if (isChoicesQuestion) {
+                correct = isChoiceCorrect(comment, state.currentCorrectAnswer.choices, state.currentCorrectAnswer.correctIndex);
+            } else {
+                correct = isAnswerCorrect(comment, state.currentCorrectAnswer.text, state.currentCorrectAnswer.alt);
+            }
+
+            if (correct) {
+                const answerTimeMs = Date.now() - state.roundStartTime;
+                state.correctAnswersThisQuestion.push({ name: nickname, team: team || null, time: answerTimeMs });
+
+                if (!state.competitionResults[nickname]) {
+                    state.competitionResults[nickname] = { count: 0, team: team || null, totalAnswerTimeMs: 0, firstAnswerTime: answerTimeMs };
+                }
+                state.competitionResults[nickname].count += 1;
+                state.competitionResults[nickname].totalAnswerTimeMs += answerTimeMs;
+
+                addHistoricalCorrectAnswer(session, nickname);
+
+                io.to(session.username).emit('newCorrectAnswer', { name: nickname, team: team || null, order: state.correctAnswersThisQuestion.length });
+                broadcastCurrentRanking(session);
+
+                if (state.timingMode === 'speed' && !state.speedTriggered) {
+                    state.speedTriggered = true;
+                    const elapsedMs = Date.now() - state.roundStartTime;
+                    const totalMs = state.competitionDuration * 1000;
+                    const remainingMs = totalMs - elapsedMs;
+
+                    if (remainingMs > 5000) {
+                        if (session.questionTimer) { clearTimeout(session.questionTimer); session.questionTimer = null; }
+                        session.questionTimer = setTimeout(() => {
+                            revealAnswer(session);
+                        }, 5000);
+                    }
+                }
+            }
+        }
+    });
+
+    connection.on('disconnected', () => {
+        session.tiktokConnected = false;
+    });
+
+    function attemptConnect() {
+        if (!sessions.has(session.username)) return; // الجلسة أُغلقت (خمول طويل)، توقف عن المحاولة
+        connection.waitUntilLive(30)
+            .then(() => {
+                if (!sessions.has(session.username)) return;
+                console.log(`🚀 [${session.username}] الحساب نشط الآن! جاري بدء الاتصال...`);
+                return connection.connect();
+            })
+            .then(() => {
+                if (!sessions.has(session.username)) return;
+                session.tiktokConnected = true;
+                console.log(`✅ [${session.username}] متصل بنجاح ببث تيك توك!`);
+            })
+            .catch((err) => {
+                if (!sessions.has(session.username)) return;
+                console.error(`❌ [${session.username}] تنبيه في الخلفية (سيتم إعادة المحاولة):`, err.toString());
+                setTimeout(attemptConnect, 30000);
+            });
+    }
+
+    console.log(`🔄 [${session.username}] جاري فحص حالة البث في الخلفية...`);
+    attemptConnect();
+}
+
+// يُرجع الجلسة إن كانت موجودة، أو ينشئها (تحميل من قاعدة البيانات + بدء اتصال TikTok) إن كانت أول مرة
+async function getOrCreateSession(username) {
+    let session = sessions.get(username);
+    if (session) {
+        session.lastActiveAt = Date.now();
+        return session;
+    }
+    session = createSessionObject(username);
+    sessions.set(username, session);
+    await loadCustomSectionsForSession(session);
+    await loadLeaderboardForSession(session);
+    startTikTokConnectionForSession(session);
+    return session;
+}
+
+// تحرير الجلسات الخاملة تماماً (بلا أي اتصال متصفح) من الذاكرة بعد فترة طويلة،
+// مع بقاء بياناتها محفوظة في قاعدة البيانات لاستعادتها فور تسجيل دخول جديد
+setInterval(() => {
+    const now = Date.now();
+    for (const [username, session] of sessions.entries()) {
+        const room = io.sockets.adapter.rooms.get(username);
+        const hasActiveSockets = room && room.size > 0;
+        if (!hasActiveSockets && (now - session.lastActiveAt) > IDLE_CLEANUP_MS) {
+            console.log(`🧹 تحرير الجلسة الخاملة: ${username}`);
+            if (session.questionTimer) clearTimeout(session.questionTimer);
+            if (session.tiktokConnection) {
+                try { session.tiktokConnection.disconnect(); } catch (e) { /* تجاهل */ }
+            }
+            sessions.delete(username);
+        }
+    }
+}, 30 * 60 * 1000);
 
 // ==================== منطق الاتصال بلوحة التحكم (Socket.io) ====================
 io.on('connection', (socket) => {
-    console.log('📶 لوحة تحكم جديدة متصلة');
-    socket.emit('stateUpdate', state);
-    broadcastSectionsLists();
-    broadcastHistoricalLeaderboard();
-    if (state.competitionActive) broadcastCurrentRanking();
+    console.log('📶 اتصال جديد بلوحة التحكم');
 
+    // يُرجع جلسة المتصفح الحالي إن كان مسجلاً دخوله، أو null
+    function requireSession() {
+        const username = socket.data.username;
+        if (!username) return null;
+        const session = sessions.get(username);
+        if (session) session.lastActiveAt = Date.now();
+        return session;
+    }
+
+    socket.on('login', async (payload) => {
+        const username = ((payload && payload.username) || '').trim();
+        const adminKey = ((payload && payload.adminKey) || '').trim();
+
+        if (!username || !adminKey) {
+            socket.emit('loginResult', { ok: false, error: 'missing_fields' });
+            return;
+        }
+        if (!dbReady) {
+            socket.emit('loginResult', { ok: false, error: 'db_not_ready' });
+            return;
+        }
+
+        const authResult = await verifyOrCreateAccount(username, adminKey);
+        if (!authResult.ok) {
+            socket.emit('loginResult', { ok: false, error: authResult.error });
+            return;
+        }
+
+        if (socket.data.username && socket.data.username !== username) {
+            socket.leave(socket.data.username);
+        }
+
+        socket.data.username = username;
+        socket.join(username);
+
+        const session = await getOrCreateSession(username);
+        session.lastActiveAt = Date.now();
+
+        socket.emit('loginResult', { ok: true, username, created: authResult.created });
+
+        // إرسال الحالة الكاملة الحالية لهذا المتصفح فور تسجيل الدخول
+        socket.emit('stateUpdate', session.state);
+        socket.emit('sectionsUpdate', {
+            bankSections: Object.keys(questionBank).map(name => ({
+                name, type: questionBank[name].type, count: questionBank[name].questions.length
+            })),
+            customSections: session.customSections
+        });
+        const leaderboardList = Object.entries(session.historicalLeaderboard)
+            .map(([name, data]) => ({ name, ...data }))
+            .sort((a, b) => (b.gold - a.gold) || (b.silver - a.silver) || (b.bronze - a.bronze) || (b.correctAnswers - a.correctAnswers));
+        socket.emit('historicalLeaderboardUpdate', leaderboardList);
+        if (session.state.competitionActive) {
+            socket.emit('currentRankingUpdate', getCurrentCompetitionRanking(session));
+        }
+    });
+
+    socket.on('logout', () => {
+        if (socket.data.username) {
+            const session = sessions.get(socket.data.username);
+            if (session) session.lastActiveAt = Date.now();
+            socket.leave(socket.data.username);
+            socket.data.username = null;
+        }
+        socket.emit('loggedOut');
+    });
+
+    socket.on('disconnect', () => {
+        if (socket.data.username) {
+            const session = sessions.get(socket.data.username);
+            if (session) session.lastActiveAt = Date.now();
+        }
+    });
+
+    // ---- إدارة الأقسام الخاصة ----
     socket.on('createCustomSection', (payload) => {
+        const session = requireSession();
+        if (!session) return;
         const name = (payload.name || '').trim();
-        if (!name || customSections[name]) return;
-        customSections[name] = {
-            id: customSectionIdCounter++,
+        if (!name || session.customSections[name]) return;
+        session.customSections[name] = {
+            id: session.customSectionIdCounter++,
             type: payload.type === 'choices' ? 'choices' : 'direct',
             questions: []
         };
-        broadcastSectionsLists();
-        saveCustomSectionsToDB();
+        broadcastSectionsLists(session);
+        saveCustomSectionsForSession(session);
     });
 
     socket.on('deleteCustomSection', (sectionName) => {
-        delete customSections[sectionName];
-        broadcastSectionsLists();
-        saveCustomSectionsToDB();
+        const session = requireSession();
+        if (!session) return;
+        delete session.customSections[sectionName];
+        broadcastSectionsLists(session);
+        saveCustomSectionsForSession(session);
     });
 
     socket.on('addCustomQuestion', (payload) => {
-        const section = customSections[payload.sectionName];
+        const session = requireSession();
+        if (!session) return;
+        const section = session.customSections[payload.sectionName];
         if (!section) return;
 
         if (section.type === 'direct') {
             section.questions.push({
-                id: customQuestionIdCounter++,
+                id: session.customQuestionIdCounter++,
                 text: payload.text,
                 correctAnswer: payload.correctAnswer
             });
         } else {
             section.questions.push({
-                id: customQuestionIdCounter++,
+                id: session.customQuestionIdCounter++,
                 text: payload.text,
                 choices: payload.choices,
                 correctIndex: payload.correctIndex
             });
         }
-        broadcastSectionsLists();
-        saveCustomSectionsToDB();
+        broadcastSectionsLists(session);
+        saveCustomSectionsForSession(session);
     });
 
     socket.on('editCustomQuestion', (payload) => {
-        const section = customSections[payload.sectionName];
+        const session = requireSession();
+        if (!session) return;
+        const section = session.customSections[payload.sectionName];
         if (!section) return;
         const q = section.questions.find(q => q.id === payload.questionId);
         if (!q) return;
@@ -1151,205 +1465,127 @@ io.on('connection', (socket) => {
             q.choices = payload.choices;
             q.correctIndex = payload.correctIndex;
         }
-        broadcastSectionsLists();
-        saveCustomSectionsToDB();
+        broadcastSectionsLists(session);
+        saveCustomSectionsForSession(session);
     });
 
     socket.on('deleteCustomQuestion', (payload) => {
-        const section = customSections[payload.sectionName];
+        const session = requireSession();
+        if (!session) return;
+        const section = session.customSections[payload.sectionName];
         if (!section) return;
         section.questions = section.questions.filter(q => q.id !== payload.questionId);
-        broadcastSectionsLists();
-        saveCustomSectionsToDB();
+        broadcastSectionsLists(session);
+        saveCustomSectionsForSession(session);
     });
 
     // ---- إعدادات عامة ----
     socket.on('setCompetitionMode', (mode) => {
-        state.competitionMode = mode === 'manual' ? 'manual' : 'auto';
-        broadcastState();
+        const session = requireSession();
+        if (!session) return;
+        session.state.competitionMode = mode === 'manual' ? 'manual' : 'auto';
+        broadcastState(session);
     });
 
     socket.on('toggleRegistration', (isOpen) => {
-        state.registrationOpen = isOpen;
+        const session = requireSession();
+        if (!session) return;
+        session.state.registrationOpen = isOpen;
         if (isOpen) {
-            state.teams = { م1: [], م2: [] };
+            session.state.teams = { م1: [], م2: [] };
         }
-        broadcastState();
+        broadcastState(session);
     });
 
     socket.on('setTeamMode', (isTeamMode) => {
-        state.teamMode = isTeamMode;
-        broadcastState();
+        const session = requireSession();
+        if (!session) return;
+        session.state.teamMode = isTeamMode;
+        broadcastState(session);
     });
 
     // ---- المسابقة ----
     socket.on('startCompetition', (payload) => {
-        // payload: { sections: [{source, name}], duration, totalQuestions, timingMode: 'speed'|'time' }
-        startCompetition(payload.sections, payload.duration, payload.totalQuestions, payload.timingMode);
+        const session = requireSession();
+        if (!session) return;
+        startCompetition(session, payload.sections, payload.duration, payload.totalQuestions, payload.timingMode);
     });
 
     socket.on('nextQuestionManually', () => {
-        nextQuestionManually();
+        const session = requireSession();
+        if (!session) return;
+        nextQuestionManually(session);
     });
 
     socket.on('stopCompetition', () => {
-        stopCompetitionManually();
+        const session = requireSession();
+        if (!session) return;
+        stopCompetitionManually(session);
     });
 
     socket.on('pauseCompetition', () => {
-        pauseCompetition();
+        const session = requireSession();
+        if (!session) return;
+        pauseCompetition(session);
     });
 
     socket.on('resumeCompetition', () => {
-        resumeCompetition();
+        const session = requireSession();
+        if (!session) return;
+        resumeCompetition(session);
     });
 
     socket.on('adjustManualTeamPoints', (payload) => {
-        // payload: { team: 'م1'|'م2', delta: 1 أو -1 }
-        adjustManualTeamPoints(payload.team, payload.delta);
+        const session = requireSession();
+        if (!session) return;
+        adjustManualTeamPoints(session, payload.team, payload.delta);
     });
 
     socket.on('dismissFinalResults', () => {
-        state.competitionFinished = false;
-        state.competitionResults = {};
-        state.competitionFinalRanking = [];
-        broadcastState();
+        const session = requireSession();
+        if (!session) return;
+        session.state.competitionFinished = false;
+        session.state.competitionResults = {};
+        session.state.competitionFinalRanking = [];
+        broadcastState(session);
     });
 
     // ---- السحب العشوائي ----
     socket.on('startDraw', (payload) => {
-        state.drawKeyword = payload.keyword;
-        state.drawParticipants = [];
-        state.drawMode = true;
-        broadcastState();
+        const session = requireSession();
+        if (!session) return;
+        session.state.drawKeyword = payload.keyword;
+        session.state.drawParticipants = [];
+        session.state.drawMode = true;
+        broadcastState(session);
     });
 
     socket.on('stopDrawCollection', () => {
-        state.drawMode = false;
-        io.emit('drawCollectionStopped', state.drawParticipants);
-        broadcastState();
+        const session = requireSession();
+        if (!session) return;
+        session.state.drawMode = false;
+        io.to(session.username).emit('drawCollectionStopped', session.state.drawParticipants);
+        broadcastState(session);
     });
 
     socket.on('pickDrawWinner', () => {
-        if (state.drawParticipants.length === 0) return;
-        const winner = state.drawParticipants[Math.floor(Math.random() * state.drawParticipants.length)];
-        io.emit('drawWinnerPicked', winner);
+        const session = requireSession();
+        if (!session) return;
+        if (session.state.drawParticipants.length === 0) return;
+        const winner = session.state.drawParticipants[Math.floor(Math.random() * session.state.drawParticipants.length)];
+        io.to(session.username).emit('drawWinnerPicked', winner);
     });
 
     // ---- قائمة المتصدرين التاريخية ----
     socket.on('clearHistoricalLeaderboard', () => {
-        clearHistoricalLeaderboard();
+        const session = requireSession();
+        if (!session) return;
+        clearHistoricalLeaderboardForSession(session);
     });
 });
-
-// ==================== الاتصال ببث TikTok ====================
-let tiktokConnection = new TikTokLiveConnection(TARGET_USERNAME, {
-    requestOptions: { timeout: 10000 },
-    websocketOptions: { timeout: 10000 }
-});
-
-const processedMessages = new Set();
-
-tiktokConnection.on('chat', (data) => {
-    if (!data) return;
-    const msgId = data.msgId || (data.msg && data.msg.id);
-    if (msgId && processedMessages.has(msgId)) return;
-    if (msgId) processedMessages.add(msgId);
-
-    const nickname = data.nickname || (data.user && data.user.nickname) || 'unknown';
-    const comment = (data.comment || data.text || data.content || '').trim();
-    if (!comment) return;
-
-    if (state.registrationOpen) {
-        const clean = comment.replace(/\s+/g, '');
-        if (clean === 'م1' && !state.teams["م1"].includes(nickname) && !state.teams["م2"].includes(nickname)) {
-            state.teams["م1"].push(nickname);
-            broadcastState();
-            return;
-        }
-        if (clean === 'م2' && !state.teams["م2"].includes(nickname) && !state.teams["م1"].includes(nickname)) {
-            state.teams["م2"].push(nickname);
-            broadcastState();
-            return;
-        }
-    }
-
-    if (state.drawMode && state.drawKeyword) {
-        if (comment.includes(state.drawKeyword) && !state.drawParticipants.includes(nickname)) {
-            state.drawParticipants.push(nickname);
-            io.emit('drawParticipantsUpdate', state.drawParticipants);
-        }
-        return;
-    }
-
-    if (state.roundActive && state.currentQuestion && state.currentCorrectAnswer && !state.competitionPaused) {
-        const team = getPlayerTeam(nickname);
-        if (state.teamMode && !team) return;
-
-        const alreadyAnswered = state.correctAnswersThisQuestion.some(a => a.name === nickname);
-        if (alreadyAnswered) return;
-
-        // نوع السؤال الحالي محفوظ ضمن currentCorrectAnswer (choices تحتوي حقل choices، direct تحتوي text فقط)
-        const isChoicesQuestion = !!state.currentCorrectAnswer.choices;
-        let correct = false;
-        if (isChoicesQuestion) {
-            correct = isChoiceCorrect(comment, state.currentCorrectAnswer.choices, state.currentCorrectAnswer.correctIndex);
-        } else {
-            correct = isAnswerCorrect(comment, state.currentCorrectAnswer.text, state.currentCorrectAnswer.alt);
-        }
-
-        if (correct) {
-            const answerTimeMs = Date.now() - state.roundStartTime;
-            state.correctAnswersThisQuestion.push({ name: nickname, team: team || null, time: answerTimeMs });
-
-            if (!state.competitionResults[nickname]) {
-                state.competitionResults[nickname] = { count: 0, team: team || null, totalAnswerTimeMs: 0, firstAnswerTime: answerTimeMs };
-            }
-            state.competitionResults[nickname].count += 1;
-            state.competitionResults[nickname].totalAnswerTimeMs += answerTimeMs;
-
-            addHistoricalCorrectAnswer(nickname);
-
-            io.emit('newCorrectAnswer', { name: nickname, team: team || null, order: state.correctAnswersThisQuestion.length });
-            broadcastCurrentRanking();
-
-            // النظام السريع: أول إجابة صحيحة تقلّص الوقت المتبقي إلى 5 ثوانٍ (فقط إذا كان المتبقي أكثر من 5)
-            if (state.timingMode === 'speed' && !state.speedTriggered) {
-                state.speedTriggered = true;
-                const elapsedMs = Date.now() - state.roundStartTime;
-                const totalMs = state.competitionDuration * 1000;
-                const remainingMs = totalMs - elapsedMs;
-
-                if (remainingMs > 5000) {
-                    if (questionTimer) { clearTimeout(questionTimer); questionTimer = null; }
-                    questionTimer = setTimeout(() => {
-                        revealAnswer();
-                    }, 5000);
-                }
-            }
-        }
-    }
-});
-
-function runServer() {
-    console.log('🔄 جاري فحص حالة البث في الخلفية...');
-    tiktokConnection.waitUntilLive(30)
-        .then(() => {
-            console.log('🚀 الحساب نشط الآن! جاري بدء الاتصال...');
-            return tiktokConnection.connect();
-        })
-        .then(() => {
-            console.log('✅ متصل بنجاح ببث تيك توك!');
-        })
-        .catch((err) => {
-            console.error('❌ تنبيه في الخلفية (سيتم إعادة المحاولة تلقائياً):', err.toString());
-            setTimeout(runServer, 30000);
-        });
-}
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`🚀 السيرفر يعمل على المنفذ: ${PORT}`);
     connectDB();
-    runServer();
 });
