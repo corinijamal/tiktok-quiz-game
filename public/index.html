@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>مسابقات كوريني - لوحة التحكم</title>
+<title>مسابقات كوريني </title>
 <meta name="theme-color" content="#1c1f15">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -329,7 +329,7 @@
 
     .empty-hint { color: var(--text-dim); font-size: 13px; text-align: center; padding: 20px; }
 
-    /* ---------- جدول قائمة المتصدرين التاريخية ---------- */
+    /* ---------- جدول قائمة المتصدرين  ---------- */
     #historicalLeaderboardBox { overflow-x: auto; }
     .leaderboard-table { width: 100%; border-collapse: collapse; font-size: 14px; }
     .leaderboard-table th {
@@ -401,11 +401,11 @@
                     <p style="color:var(--text-dim); font-size:12px;">
                         أدخل اسم مستخدم TikTok ومفتاح الإدارة الخاص بهذا الحساب. أول تسجيل دخول بحساب جديد
                         يُنشئ له مفتاحاً بالضبط بالكلمة التي تدخلها الآن — احتفظ بها لاستخدامها لاحقاً.
-                        كل حساب يملك بثه وأسئلته الخاصة وسجله المستقل تماماً عن باقي الحسابات.
+                        .
                     </p>
                     <div id="loginForm">
                         <label>اسم مستخدم TikTok (بدون @)</label>
-                        <input type="text" id="loginUsername" placeholder="مثال: a_7_m_d2">
+                        <input type="text" id="loginUsername" placeholder="مثال: jamalcorini">
                         <label>مفتاح الإدارة</label>
                         <input type="text" id="loginAdminKey" placeholder="كلمة سر خاصة بهذا الحساب">
                         <div id="loginError" style="color:var(--red); font-size:13px; margin-top:8px; display:none;"></div>
@@ -416,7 +416,7 @@
                     <div id="loggedInBox" style="display:none;">
                         <div class="status-line live">مسجَّل الدخول بحساب: <strong id="loggedInUsername"></strong></div>
                         <footer class="controls-fixed">
-                            <button class="btn btn-outline" onclick="doLogout()">🚪 تسجيل خروج</button>
+                            <button class="btn btn-outline" onclick="doLogout()">➜]  تسجيل خروج</button>
                         </footer>
                     </div>
                 </div>
@@ -437,7 +437,7 @@
                         يدوي: يظهر زر "السؤال التالي" بعد كل سؤال. تلقائي: ينتقل تلقائياً بعد لحظات.
                     </p>
 
-                    <h3 style="margin-top:28px;">🏆 قائمة المتصدرين (سجل تاريخي دائم)</h3>
+                    <h3 style="margin-top:28px;">🏆 قائمة المتصدرين </h3>
                     <div class="row" style="justify-content:space-between;">
                         <span style="color:var(--text-dim); font-size:12px;">مجموع كل الأوقات لكل المسابقات</span>
                         <button class="btn btn-danger btn-sm" onclick="askClearHistoricalLeaderboard()">🗑️</button>
@@ -527,7 +527,7 @@
                 <div id="customSectionsSelectBox"></div>
                 <p class="empty-hint" id="noCustomSectionsHint" style="display:none;">لا توجد أقسام خاصة بعد. أضفها من تبويب "الإعدادات".</p>
 
-                <label style="margin-top:20px;">مدة كل سؤال (ثانية) - ثابتة طوال المسابقة</label>
+                <label style="margin-top:20px;">مدة كل سؤال (ثانية) </label>
                 <div class="duration-options" id="qnaDurationOptions">
                     <div class="duration-chip" data-val="15">15</div>
                     <div class="duration-chip selected" data-val="20">20</div>
